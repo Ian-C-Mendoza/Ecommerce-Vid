@@ -12,7 +12,22 @@ import { services } from "../../data/mockData";
 
 export function ServiceDetails({ service, onBack, onAddToCart }) {
   const [selectedAddons, setSelectedAddons] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState("one-time"); // default plan
 
+  // Get number of videos based on service
+  const getPlanDescription = (plan) => {
+    if (plan === "one-time") {
+      // Just show the videos count from service.features[0]
+      const match = service.features[0].match(/\d+/); // extract the number from string
+      const numVideos = match ? match[0] : "";
+      return `Perfect if you need a single batch of ${numVideos} edited videos (up to 1 minute each).`;
+    }
+    if (plan === "monthly") {
+      const match = service.features[0].match(/\d+/);
+      const numVideos = match ? match[0] : "";
+      return `Ideal for creators who want fresh videos every month. You'll receive ${numVideos} videos every billing cycle.`;
+    }
+  };
   const totalPrice =
     service.price +
     selectedAddons.reduce((sum, addonName) => {
@@ -32,6 +47,7 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
     onAddToCart({
       service,
       quantity: 1,
+      plan: selectedPlan, // ✅ save the selected plan
       addons: selectedAddons,
     });
   };
@@ -60,27 +76,40 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
               </div>
             </div>
 
-            {/* Sample Work Gallery */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Sample Work</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
+              <h3 className="text-lg font-semibold">Choose Your Plan</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {["one-time", "monthly"].map((plan) => (
                   <div
-                    key={i}
-                    className="relative aspect-video rounded-lg overflow-hidden group cursor-pointer"
+                    key={plan}
+                    onClick={() => setSelectedPlan(plan)}
+                    className={`relative rounded-lg overflow-hidden group cursor-pointer border p-6 shadow transition ${
+                      selectedPlan === plan
+                        ? "ring-2 ring-blue-500 bg-gradient-to-r from-blue-50 to-blue-100"
+                        : "hover:shadow-lg"
+                    }`}
                   >
-                    <ImageWithFallback
-                      src={`https://images.unsplash.com/photo-${
-                        1625961332635 + i
-                      }?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=300`}
-                      alt={`Sample ${i}`}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                        <div className="w-0 h-0 border-l-2 border-l-black border-y-1 border-y-transparent ml-0.5"></div>
-                      </div>
-                    </div>
+                    <h4 className="text-lg font-medium">
+                      {plan === "one-time"
+                        ? "One-Time Purchase"
+                        : "Monthly Subscription"}{" "}
+                      {plan === "monthly" && (
+                        <span className="text-sm font-semibold text-blue-600">
+                          (Recommended)
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-2xl font-bold mt-2">
+                      ${service.price}{" "}
+                      {plan === "monthly" && (
+                        <span className="text-base font-normal text-gray-500">
+                          /month
+                        </span>
+                      )}
+                    </p>
+                    <p className="mt-4 text-gray-600">
+                      {getPlanDescription(plan)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -170,13 +199,26 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
             <Card className="border-2 border-primary/20 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
               <CardContent className="p-6">
                 <div className="space-y-4">
+                  {/* Base Service Price */}
                   <div className="flex items-center justify-between">
-                    <span className="text-lg">Base Service</span>
+                    <span className="text-lg">
+                      Base Service (
+                      {selectedPlan === "one-time" ? "One-Time" : "Monthly"})
+                    </span>
                     <span className="text-lg font-medium">
-                      ${service.price}
+                      $
+                      {selectedPlan === "one-time"
+                        ? service.price
+                        : service.price}
+                      {selectedPlan === "monthly" && (
+                        <span className="text-base font-normal text-gray-500">
+                          /month
+                        </span>
+                      )}
                     </span>
                   </div>
 
+                  {/* Selected Add-ons */}
                   {selectedAddons.map((addonName) => {
                     const addon = addons.find((a) => a.name === addonName);
                     return (
@@ -194,6 +236,7 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
                     );
                   })}
 
+                  {/* Total Price */}
                   <div className="border-t pt-4">
                     <div className="flex items-center justify-between text-xl font-bold">
                       <span>Total</span>
@@ -203,6 +246,7 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
                     </div>
                   </div>
 
+                  {/* Add to Cart Button */}
                   <Button
                     onClick={handleAddToCart}
                     className="w-full mt-6 bg-gradient-primary text-white btn-hover-primary"

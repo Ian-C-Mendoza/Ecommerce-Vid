@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Header } from "./components/common/Header";
 import { Hero } from "./components/pages/Hero";
 import { Gallery } from "./components/pages/Gallery";
+import { ContactSection } from "./components/pages/ContactSection";
 import { Pricing } from "./components/pages/Pricing";
 import { ServiceDetails } from "./components/pages/ServiceDetails";
 import { Cart } from "./components/pages/Cart";
@@ -174,7 +175,7 @@ export default function App() {
           </div>
         );
 
-      case "portfolio":
+        //  case "portfolio":
         return (
           <div
             className={`transition-opacity duration-500 ${
@@ -255,8 +256,8 @@ export default function App() {
               <Pricing onSelectService={handleSelectService} />
             </section>
 
-            <section id="portfolio" className="scroll-mt-20">
-              <Gallery onViewPortfolio={() => handlePageChange("portfolio")} />
+            <section id="contact" className="scroll-mt-20">
+              <ContactSection />
             </section>
 
             <section id="about" className="scroll-mt-20">

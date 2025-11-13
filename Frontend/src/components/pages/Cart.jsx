@@ -29,16 +29,18 @@ export function Cart({
   const [isPromoApplied, setIsPromoApplied] = useState(false);
 
   const subtotal = cartItems.reduce((sum, item) => {
-    // Skip items without a valid service
     if (!item.service) return sum;
 
-    // Ensure addons is always an array
     const addonsCost = (item.addons || []).reduce((addonSum, addonName) => {
       const addon = addons.find((a) => a.name === addonName);
       return addonSum + (addon?.price || 0);
     }, 0);
 
-    return sum + (item.service.price + addonsCost) * item.quantity;
+    // Use plan price if you want to differentiate monthly vs one-time
+    const planPrice =
+      item.plan === "monthly" ? item.service.price : item.service.price;
+
+    return sum + (planPrice + addonsCost) * item.quantity;
   }, 0);
 
   const discount = isPromoApplied ? subtotal * 0.1 : 0;
@@ -122,12 +124,21 @@ export function Cart({
                             <h3 className="font-semibold text-lg">
                               {item.service.title}
                             </h3>
+
                             <p className="text-sm text-muted-foreground">
                               {item.service.description}
                             </p>
                             <Badge variant="outline" className="mt-1">
                               {item.service.category}
                             </Badge>
+                            <p className="text-sm text-muted-foreground">
+                              Plan:{" "}
+                              <span className="text-blue-600">
+                                {item.plan === "monthly"
+                                  ? "Monthly Subscription"
+                                  : "One-Time Purchase"}
+                              </span>
+                            </p>
                           </div>
                           <Button
                             variant="ghost"
@@ -191,7 +202,9 @@ export function Cart({
                           <div className="text-right">
                             <div className="text-lg font-semibold">
                               $
-                              {(item.service.price +
+                              {((item.plan === "monthly"
+                                ? item.service.price
+                                : item.service.price) +
                                 item.addons.reduce((sum, addonName) => {
                                   const addon = addons.find(
                                     (a) => a.name === addonName
@@ -200,6 +213,7 @@ export function Cart({
                                 }, 0)) *
                                 item.quantity}
                             </div>
+
                             <div className="text-sm text-muted-foreground">
                               ${item.service.price} × {item.quantity}
                               {item.addons.length > 0 && " + add-ons"}

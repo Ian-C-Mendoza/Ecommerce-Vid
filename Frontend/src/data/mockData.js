@@ -1,22 +1,5 @@
 export const services = [
-  {
-    id: "1",
-    key: "Trial",
-    title: " Try Us – Single Edit Trial",
-    description:
-      "Essential video editing with cuts, transitions, and basic color correction",
-    price: 50,
-    duration: "72-hour delivery",
-    category: "Trial",
-    features: [
-      "1 fully edited video (up to 1 minute)",
-      "Branded text and color matching",
-      "Smooth transitions and sound sync",
-      "1 revision included",
-    ],
-    thumbnail:
-      "https://images.unsplash.com/photo-1625961332635-3d18bbad67fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWRlbyUyMGVkaXRpbmclMjB3b3Jrc3BhY2UlMjBwcm9mZXNzaW9uYWx8ZW58MXx8fHwxNzU3MTY4Mzc1fDA&ixlib=rb-4.1.0&q=80&w=400",
-  },
+  
   {
     id: "2",
     key: "Core",

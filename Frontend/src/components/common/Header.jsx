@@ -16,7 +16,6 @@ export function Header({
   const navItems = [
     { id: "home", label: "Home" },
     { id: "services", label: "Services" },
-    { id: "portfolio", label: "Portfolio" },
     { id: "about", label: "About" },
     { id: "admin", label: "Admin" },
   ];
