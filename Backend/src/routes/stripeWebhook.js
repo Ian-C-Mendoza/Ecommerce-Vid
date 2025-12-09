@@ -20,7 +20,7 @@ function formatDateNice(date) {
 
 // ---------------- GOOGLE DRIVE SETUP ----------------
 const auth = new google.auth.GoogleAuth({
-  keyFile: "newestcredentials.json",
+  credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
 const drive = google.drive({ version: "v3", auth });
