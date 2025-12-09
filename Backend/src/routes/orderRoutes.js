@@ -1,7 +1,10 @@
 import express from "express";
 import supabase from "../utils/supabaseClient.js";
 import { getAllOrders } from "../controllers/orderController.js";
+import { getAllSubscriptions } from "../controllers/subscriptionController.js";
 import { updateOrderStatus } from "../controllers/orderController.js";
+import Stripe from "stripe";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const router = express.Router();
 
@@ -12,11 +15,10 @@ const VALID_PAYMENT_METHOD = ["credit_card", "paypal", "bank_transfer"];
 
 // ✅ Match frontend mockData IDs (1, 2, 3)
 const HARDCODED_SERVICES = [
-  { id: "1", title: " Try Us – Single Edit Trial", price: 50 },
-  { id: "2", title: "Core", price: 295 },
-  { id: "3", title: "Plus", price: 480 },
-  { id: "4", title: "Pro", price: 815 },
-  { id: "5", title: "Elite", price: 1080 },
+  { id: "2", title: "Core", price: 250 },
+  { id: "3", title: "Plus", price: 450 },
+  { id: "4", title: "Pro", price: 650 },
+  { id: "5", title: "Elite", price: 850 },
 ];
 
 router.post("/create", async (req, res) => {
@@ -163,7 +165,10 @@ router.get("/history/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
   try {
-    const { data: orders, error } = await supabase
+    // ---------------------------------
+    // 🛒 FETCH ORDERS
+    // ---------------------------------
+    const { data: orders, error: ordersError } = await supabase
       .from("orders")
       .select(
         `
@@ -183,9 +188,46 @@ router.get("/history/:user_id", async (req, res) => {
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (ordersError) throw ordersError;
 
-    res.status(200).json({ orders });
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      order_items: order.order_items.map((item) => ({
+        ...item,
+        total_price: item.price * item.quantity,
+      })),
+    }));
+
+    // ---------------------------------
+    // 🔔 FETCH SUBSCRIPTIONS
+    // ---------------------------------
+    const { data: subscriptions, error: subError } = await supabase
+      .from("subscriptions")
+      .select("id, plan_name, status, date_created, next_billing")
+      .eq("user_id", user_id)
+      .order("date_created", { ascending: false });
+
+    if (subError) throw subError;
+
+    // Map to frontend-friendly keys
+    const formattedSubs = (subscriptions || []).map((sub) => ({
+      id: sub.id,
+      plan: sub.plan_name || "Unknown Plan",
+      status: sub.status || "Unknown",
+      start_date: sub.date_created || null, // exact property
+      next_billing: sub.next_billing || null,
+    }));
+
+    const latestSubscription = formattedSubs.length ? formattedSubs[0] : null;
+
+    // ---------------------------------
+    // 📦 SEND RESPONSE
+    // ---------------------------------
+    res.status(200).json({
+      orders: formattedOrders,
+      subscriptions: formattedSubs,
+      latest_subscription: latestSubscription,
+    });
   } catch (err) {
     console.error("❌ Failed to fetch order history:", err);
     res.status(500).json({ error: err.message });

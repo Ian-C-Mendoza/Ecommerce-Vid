@@ -1,11 +1,10 @@
 export const services = [
-  
   {
     id: "2",
     key: "Core",
     title: " Core",
     description:
-      "Essential video editing with cuts, transitions, and basic color correction",
+      "Professional 1-minute videos with clean cuts, smooth transitions, and basic color correction—ready to share.",
     price: 250,
     duration: "2-3 days",
     category: "Core",
@@ -16,14 +15,22 @@ export const services = [
       "1 free revision per video",
     ],
     thumbnail:
-      "https://images.unsplash.com/photo-1625961332635-3d18bbad67fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWRlbyUyMGVkaXRpbmclMjB3b3Jrc3BhY2UlMjBwcm9mZXNzaW9uYWx8ZW58MXx8fHwxNzU3MTY4Mzc1fDA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1625961332635-3d18bbad67fa?...",
+    //stripeMonthlyPriceId: "price_1STo5G2aOr9gLv7btajWPjUO",
+    stripeMonthlyPriceId: "price_1SXSEHFWLpcmMuQ2WwkqXOpM",
+    videos: [
+      "/core/copy_A16D6D2D-5182-4F56-A501-E0A9B7FF7B40.mp4",
+      "/core/DITL 3 LOCO.mp4",
+      "/core/Get up trend.mp4",
+      "/core/HELEN CLOSING.mp4",
+    ],
   },
   {
     id: "3",
     key: "Plus",
     title: " Plus",
     description:
-      "Professional editing with advanced effects and motion graphics",
+      "Elevate your videos with professional edits, motion graphics, custom branding, captions, and polished sound.",
     price: 450,
     duration: "72-hour turnaround guaranteed",
     category: "Plus",
@@ -35,15 +42,23 @@ export const services = [
       "1 free revision per video",
       "3 revisions included",
     ],
-    thumbnail:
-      "https://images.unsplash.com/photo-1552680324-aee2ea34b336?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBvZmZpY2UlMjBkZXNrdG9wJTIwY29tcHV0ZXJ8ZW58MXx8fHwxNzU3MjU3NjE1fDA&ixlib=rb-4.1.0&q=80&w=400",
+    thumbnail: "https://images.unsplash.com/photo-1552680324-aee2ea34b336?...",
+    // stripeMonthlyPriceId: "price_1STo5c2aOr9gLv7b9ZCCXJCh",
+    stripeMonthlyPriceId: "price_1SXSFDFWLpcmMuQ2f9kAAvbl",
+
+    videos: [
+      "/assets/CLOSING 2.mp4",
+      "/plus/BUYER VS REALTOR.mp4",
+      "/plus/REAL ESTATE MYTHS.mp4",
+      "/assets/PROPERTY TOUR 2 (2).mp4",
+    ],
   },
   {
     id: "4",
     key: "Pro",
     title: "Pro",
     description:
-      "Complete cinematic production with custom animations and effects",
+      "Cinematic videos with custom animations, storytelling cuts, color grading, branded intros/outros, and polished audio",
     price: 650,
     duration: "72-hour delivery",
     category: "Pro",
@@ -57,14 +72,24 @@ export const services = [
       "Up to 2 revisions per video",
     ],
     thumbnail:
-      "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWRlbyUyMGVkaXRpbmclMjBwcm9mZXNzaW9uYWwlMjBzZXR1cHxlbnwxfHx8fDE3NTcxNjgzNzR8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?...",
+    // stripeMonthlyPriceId: "price_1STo6B2aOr9gLv7bw2HUaI3y",
+    stripeMonthlyPriceId: "price_1SXSFhFWLpcmMuQ2HHm5kwqN",
+
+    videos: [
+      "/assets/CLOSING 1.mp4",
+      "/pro/copy_99F97E53-770F-49C0-8F89-D254E182CBAE.mp4",
+      "/pro/copy_A019C072-F8F5-4D1A-9ADB-EA5D770D41B8.mp4",
+      "/pro/copy_BAE8B05A-A0A6-41DC-982B-88086669495B.mp4",
+      "/assets/PROPERTY TOUR 1.mp4",
+    ],
   },
   {
     id: "5",
     key: "Elite",
     title: "Elite",
     description:
-      "Complete cinematic production with custom animations and effects",
+      "Ultimate cinematic videos with full creative direction, custom animations, advanced effects, color grading, and branded visuals.",
     price: 850,
     duration: "72-hour turnaround",
     category: "Elite",
@@ -77,7 +102,16 @@ export const services = [
       "Stylish subtitles and premium typography",
     ],
     thumbnail:
-      "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aWRlbyUyMGVkaXRpbmclMjBwcm9mZXNzaW9uYWwlMjBzZXR1cHxlbnwxfHx8fDE3NTcxNjgzNzR8MA&ixlib=rb-4.1.0&q=80&w=400",
+      "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?...",
+    //stripeMonthlyPriceId: "price_1STo6c2aOr9gLv7bnB5mLH8K",
+    stripeMonthlyPriceId: "price_1SXSGEFWLpcmMuQ2AANnHQjO",
+
+    videos: [
+      "/assets/COMPANY EDIT.mp4",
+      "/elite/copy_2C207727-1080-4757-8D8A-DCB1BA4BFC2C.mp4",
+      "/elite/copy_43EEC12D-13C5-4A72-8B59-C3489EB1BD3C.mp4",
+      "/elite/Vacation Introductory VO.mp4",
+    ],
   },
 ];
 

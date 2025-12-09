@@ -65,6 +65,8 @@ import {
   Video,
   ExternalLink,
   Star,
+  Mail,
+  Inbox,
 } from "lucide-react";
 import {
   mockOrders,
@@ -75,10 +77,16 @@ import {
 
 export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   const [orders, setOrders] = useState(mockOrders);
+  const [subscriptions, setSubscriptions] = useState([]); // ✅ must exist
+
   const [servicesList, setServicesList] = useState(services);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [messages, setMessages] = useState([]);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+
+  useState("all");
   const [dateRange, setDateRange] = useState("30");
   const [newService, setNewService] = useState({
     title: "",
@@ -88,6 +96,10 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     category: "basic",
     features: [""],
   });
+  // State for search and status filter
+  const [subscriptionSearch, setSubscriptionSearch] = useState("");
+  const [subscriptionStatusFilter, setSubscriptionStatusFilter] =
+    useState("all");
 
   // Portfolio management state
   const [portfolioItems, setPortfolioItems] = useState([]);
@@ -214,6 +226,33 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     );
   };
 
+  async function loadMessages() {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error) setMessages(data);
+  }
+
+  async function markAsRead(id) {
+    await supabase.from("messages").update({ read: true }).eq("id", id);
+    loadMessages();
+
+    setSelectedMessage((prev) =>
+      prev?.id === id ? { ...prev, read: true } : prev
+    );
+  }
+
+  async function deleteMessage(id) {
+    await supabase.from("messages").delete().eq("id", id);
+    loadMessages();
+    setSelectedMessage(null);
+  }
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
   const handleSelectOrder = (orderId) => {
     setSelectedOrders((prev) =>
       prev.includes(orderId)
@@ -239,6 +278,7 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
 
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
   const [customerData, setCustomerData] = useState([]);
+  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
 
   useEffect(() => {
     async function fetchOrders() {
@@ -309,6 +349,79 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     );
 
     return () => subscription.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    async function fetchSubscriptions() {
+      setIsLoadingSubscriptions(true);
+
+      try {
+        // 🔹 Try Supabase session first
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        let token = null;
+
+        if (session?.access_token) {
+          console.log("🟢 Supabase session found, using access token...");
+          token = session.access_token;
+        } else {
+          const localToken = localStorage.getItem("token");
+          if (localToken) {
+            console.log(
+              "🟠 Using stored JWT token for fetching subscriptions..."
+            );
+            token = localToken;
+          } else {
+            console.warn(
+              "⚠️ No Supabase or stored token, fallback to cookie..."
+            );
+          }
+        }
+
+        // 🔹 Fetch from backend
+        const res = await axios.get("http://localhost:5000/api/subscriptions", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          withCredentials: true,
+        });
+
+        if (res.data) {
+          setSubscriptions(res.data);
+          console.log("✅ Subscriptions fetched successfully:", res.data);
+        } else {
+          console.warn("⚠️ No subscriptions data received.");
+          setSubscriptions([]);
+        }
+      } catch (err) {
+        console.error(
+          "❌ Error fetching subscriptions:",
+          err.response?.data || err.message
+        );
+        setSubscriptions([]);
+      } finally {
+        setIsLoadingSubscriptions(false);
+      }
+    }
+
+    fetchSubscriptions();
+
+    // 🔁 Re-fetch when auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session) {
+          console.log("🔁 Auth state changed — refreshing subscriptions");
+          await fetchSubscriptions();
+        } else {
+          setSubscriptions([]);
+        }
+      }
+    );
+
+    return () => authListener.subscription.unsubscribe();
   }, []);
 
   // 🧩 Add or replace this useEffect in AdminDashboard.jsx
@@ -393,6 +506,20 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     return matchesSearch && matchesStatus;
   });
   const [customers, setCustomers] = useState([]); // ✅ this is what you were missing
+
+  const filteredSubscriptions = subscriptions.filter((sub) => {
+    const name = sub.customerName?.toLowerCase() || "";
+    const email = sub.email?.toLowerCase() || "";
+    const search = subscriptionSearch.toLowerCase();
+
+    const matchesSearch = name.includes(search) || email.includes(search);
+    const matchesStatus =
+      subscriptionStatusFilter === "all"
+        ? true
+        : sub.status === subscriptionStatusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // ✅ Fetch customers on mount
   useEffect(() => {
@@ -560,6 +687,38 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "orders_with_addons.csv";
+    link.click();
+  };
+  const exportSubscriptionsToCSV = () => {
+    const headers = [
+      "Subscription ID",
+      "Customer Name",
+      "Email",
+      "Plan",
+      "Status",
+      "Start Date",
+      "Next Billing",
+    ];
+
+    const rows = filteredSubscriptions.map((sub) => [
+      sub.id,
+      sub.customerName || "Unknown",
+      sub.email || "—",
+      sub.plan || "Unknown Plan",
+      sub.status || "Unknown",
+      sub.start_date ? new Date(sub.start_date).toLocaleDateString() : "—",
+      sub.next_billing ? new Date(sub.next_billing).toLocaleDateString() : "—",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r) => r.map((x) => `"${x}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "subscriptions.csv";
     link.click();
   };
 
@@ -994,6 +1153,159 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
         </Card>
       )}
 
+      {activeTab === "subscriptions" && (
+        <Card className="glass">
+          <CardHeader className="space-y-4">
+            <div className="flex items-center justify-between">
+              <CardTitle>Subscription Management</CardTitle>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="btn-hover-secondary"
+                  onClick={exportSubscriptionsToCSV}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="btn-hover-secondary"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filters
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search subscriptions..."
+                  value={subscriptionSearch}
+                  onChange={(e) => setSubscriptionSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <Select
+                value={subscriptionStatusFilter}
+                onValueChange={setSubscriptionStatusFilter}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="past_due">Past Due</SelectItem>
+                  <SelectItem value="canceled">Canceled</SelectItem>
+                  <SelectItem value="unpaid">Unpaid</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Subscription ID</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Start Date</TableHead>
+                  <TableHead>Next Billing</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {filteredSubscriptions.map((sub) => (
+                  <TableRow key={sub.id}>
+                    {/* SUBSCRIPTION ID */}
+                    <TableCell className="font-medium">{sub.id}</TableCell>
+
+                    {/* CUSTOMER */}
+                    <TableCell>
+                      <div className="font-medium">{sub.customerName}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {sub.email}
+                      </div>
+                    </TableCell>
+
+                    {/* PLAN */}
+                    <TableCell className="font-semibold">
+                      {sub.plan || "Unknown"}
+                    </TableCell>
+
+                    {/* STATUS */}
+                    <TableCell>
+                      <Badge
+                        className={
+                          sub.status === "active"
+                            ? "bg-green-600 !text-black"
+                            : sub.status === "past_due"
+                            ? "bg-yellow-500 !text-black"
+                            : sub.status === "canceled"
+                            ? "bg-red-600 !text-black"
+                            : "bg-gray-500 !text-black"
+                        }
+                      >
+                        {sub.status}
+                      </Badge>
+                    </TableCell>
+
+                    {/* START DATE */}
+                    <TableCell>
+                      {sub.start_date
+                        ? new Date(sub.start_date).toLocaleString()
+                        : "—"}
+                    </TableCell>
+
+                    {/* NEXT BILLING */}
+                    <TableCell>
+                      {sub.next_billing
+                        ? new Date(sub.next_billing).toLocaleString()
+                        : "—"}
+                    </TableCell>
+
+                    {/* ACTIONS */}
+                    <TableCell>
+                      <Select
+                        value={sub.status}
+                        onValueChange={(value) =>
+                          updateSubscriptionStatus(
+                            sub.id,
+                            value,
+                            setSubscriptions
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="past_due">Past Due</SelectItem>
+                          <SelectItem value="canceled">Canceled</SelectItem>
+                          <SelectItem value="unpaid">Unpaid</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
       {activeTab === "customers" && (
         <Card className="glass">
           <CardHeader className="space-y-4">
@@ -1137,6 +1449,147 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
             </Table>
           </CardContent>
         </Card>
+      )}
+
+      {activeTab === "inbox" && (
+        <div className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* ---------------- INBOX LIST ---------------- */}
+            <Card className="glass">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Inbox Messages</span>
+                  <Badge variant="secondary">{messages.length} messages</Badge>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                {messages.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No messages yet</p>
+                    <p className="text-sm text-muted-foreground">
+                      When users send a message, it will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    {messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`p-4 border rounded-lg space-y-3 glass cursor-pointer transition-all ${
+                          msg.read
+                            ? "opacity-80"
+                            : "border-primary shadow-md shadow-primary/20"
+                        }`}
+                        onClick={() => {
+                          setSelectedMessage(msg);
+                          if (!msg.read) markAsRead(msg.id);
+                        }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium">{msg.name}</h4>
+                            <p className="text-xs text-muted-foreground">
+                              {msg.email}
+                            </p>
+                          </div>
+
+                          <Badge
+                            className={
+                              msg.read ? "bg-gray-400" : "bg-green-600"
+                            }
+                          >
+                            {msg.read ? "Read" : "New"}
+                          </Badge>
+                        </div>
+
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {msg.message}
+                        </p>
+
+                        <p className="text-[10px] text-muted-foreground text-right">
+                          {new Date(msg.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* ---------------- VIEW MESSAGE ---------------- */}
+            <Card className="glass">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Inbox className="w-5 h-5" />
+                  <span>Message Details</span>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {!selectedMessage ? (
+                  <div className="text-center py-10">
+                    <Inbox className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      Select a message to view details
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* NAME / EMAIL */}
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Sender</p>
+                      <p className="text-lg font-medium">
+                        {selectedMessage.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedMessage.email}
+                      </p>
+                    </div>
+
+                    {/* MESSAGE */}
+                    <div>
+                      <p className="text-xs text-muted-foreground">Message</p>
+                      <p className="bg-background border p-3 rounded-md mt-1 text-sm">
+                        {selectedMessage.message}
+                      </p>
+                    </div>
+
+                    {/* DATE */}
+                    <p className="text-xs text-muted-foreground text-right">
+                      Received:{" "}
+                      {new Date(selectedMessage.created_at).toLocaleString()}
+                    </p>
+
+                    <div className="flex items-center gap-3 pt-4">
+                      {/* MARK AS READ */}
+                      {!selectedMessage.read && (
+                        <Button
+                          variant="secondary"
+                          onClick={() => markAsRead(selectedMessage.id)}
+                          className="flex-1"
+                        >
+                          Mark as Read
+                        </Button>
+                      )}
+
+                      {/* DELETE */}
+                      <Button
+                        variant="destructive"
+                        onClick={() => deleteMessage(selectedMessage.id)}
+                        className="flex-1"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {activeTab === "testimonials" && (

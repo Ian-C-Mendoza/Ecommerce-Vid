@@ -30,20 +30,20 @@ export function MediaCarousel({ items = [] }) {
       setCurrent(selected);
 
       const videos = document.querySelectorAll("video");
-      videos.forEach((video) => video.pause()); // pause all
+      videos.forEach((video) => video.pause());
+
       const currentVideo = document.getElementById(`video-${selected}`);
       if (currentVideo) {
         currentVideo.play();
         setIsPlaying({ [selected]: true });
-        currentVideo.muted = true; // mute to allow autoplay
+        currentVideo.muted = true;
         setIsMuted({ [selected]: true });
       }
     };
 
     api.on("select", onSelect);
-    onSelect(); // autoplay first slide
+    onSelect();
 
-    // Auto-scroll every 5 seconds
     const interval = setInterval(() => {
       if (api.canScrollNext()) {
         api.scrollNext();
@@ -52,9 +52,7 @@ export function MediaCarousel({ items = [] }) {
       }
     }, 5000);
 
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [api]);
 
   const togglePlay = (index) => {
@@ -88,7 +86,8 @@ export function MediaCarousel({ items = [] }) {
         <CarouselContent className="-ml-4 h-full">
           {items.map((item, index) => (
             <CarouselItem key={index} className="pl-4 h-full relative">
-              <div className="relative w-full h-[400px] sm:h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden rounded-2xl shadow-lg">
+              {/* Main media wrapper */}
+              <div className="relative w-full h-full overflow-hidden rounded-2xl shadow-lg bg-black">
                 {item.type === "image" ? (
                   <ImageWithFallback
                     src={item.src}
@@ -96,15 +95,17 @@ export function MediaCarousel({ items = [] }) {
                     className="w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105"
                   />
                 ) : (
+                  /* 📌 FIXED VIDEO CONTAINER FOR 9:16 RATIO */
                   <div className="w-full h-full flex items-center justify-center bg-black">
                     <video
                       id={`video-${index}`}
-                      className="max-w-full max-h-full object-contain rounded-2xl"
+                      className="w-full h-full object-cover rounded-2xl"
                       loop
                       playsInline
                       muted
                       autoPlay
                       poster={item.thumbnail}
+                      onError={(e) => console.error("Video failed:", e)}
                     >
                       <source src={item.src} type="video/mp4" />
                       Your browser does not support the video tag.
@@ -112,7 +113,7 @@ export function MediaCarousel({ items = [] }) {
                   </div>
                 )}
 
-                {/* Play / Pause Button - centered */}
+                {/* Play / Pause */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
                   <Button
                     size="lg"
@@ -147,7 +148,7 @@ export function MediaCarousel({ items = [] }) {
                   onClick={() => api?.scrollPrev()}
                   disabled={!api?.canScrollPrev()}
                   className={cn(
-                    "absolute top-1/2 left-4 -translate-y-1/2 z-20", // fixed 16px from left
+                    "absolute top-1/2 left-4 -translate-y-1/2 z-20",
                     "bg-white/90 text-black rounded-full w-12 h-12 shadow-lg backdrop-blur-sm",
                     "opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out hover:scale-110"
                   )}
@@ -162,7 +163,7 @@ export function MediaCarousel({ items = [] }) {
                   onClick={() => api?.scrollNext()}
                   disabled={!api?.canScrollNext()}
                   className={cn(
-                    "absolute top-1/2 right-4 -translate-y-1/2 z-20", // fixed 16px from right
+                    "absolute top-1/2 right-4 -translate-y-1/2 z-20",
                     "bg-white/90 text-black rounded-full w-12 h-12 shadow-lg backdrop-blur-sm",
                     "opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out hover:scale-110"
                   )}
@@ -175,7 +176,7 @@ export function MediaCarousel({ items = [] }) {
         </CarouselContent>
       </Carousel>
 
-      {/* Dots Navigation */}
+      {/* Dots */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 flex justify-center gap-2 z-20 pointer-events-auto">
         {Array.from({ length: count }).map((_, index) => (
           <button
@@ -187,7 +188,6 @@ export function MediaCarousel({ items = [] }) {
                 ? "w-8 h-2 bg-gradient-primary shadow-md"
                 : "w-2 h-2 bg-gray-400 dark:bg-gray-600"
             )}
-            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>

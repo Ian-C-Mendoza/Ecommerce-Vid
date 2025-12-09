@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import stripeWebhookRoutes from "./src/routes/stripeWebhook.js";
 import authRoutes from "./src/routes/authRoutes.js";
+import subscriptionRoutes from "./src/routes/subscriptionRoutes.js";
 import orderRoutes from "./src/routes/orderRoutes.js";
 import paymentRoutes from "./src/routes/payment.js";
 
@@ -24,6 +25,7 @@ app.use(express.json());
 /* ✅ Your normal routes */
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/payment", paymentRoutes);
 
 const PORT = process.env.PORT || 5000;

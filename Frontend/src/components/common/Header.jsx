@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Badge } from "../ui/badge";
-import { Moon, Sun, ShoppingCart, Menu, X, Clock } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  ShoppingCart,
+  Menu,
+  X,
+  Clock,
+  Settings,
+} from "lucide-react";
 
 export function Header({
   currentPage,
@@ -12,30 +20,38 @@ export function Header({
   cartCount,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false); // MUST be before useEffect
 
   const navItems = [
     { id: "home", label: "Home" },
     { id: "services", label: "Services" },
+    { id: "contact", label: "Contact us" },
     { id: "about", label: "About" },
-    { id: "admin", label: "Admin" },
   ];
+
+  // 🔐 Reveal Admin only when pressing CTRL + SHIFT + A
+  useEffect(() => {
+    function handleKey(e) {
+      if (e.ctrlKey && e.shiftKey && e.key === "A") {
+        setShowAdmin(true);
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
 
   const handleNavClick = (pageId) => {
     onPageChange(pageId);
     setMobileMenuOpen(false);
   };
 
-  // 🚫 Don’t render header at all if on Admin page
+  // 🚫 Don't render header if on admin page
   if (currentPage === "admin") {
     return null;
   }
 
   return (
-    <header
-      className="sticky top-0 z-50 border-b 
-                 bg-[#D8D2C2] dark:bg-[#0F0F0F]/70 
-                 backdrop-blur-lg shadow-sm"
-    >
+    <header className="sticky top-0 z-50 border-b bg-[#D8D2C2] dark:bg-[#0F0F0F]/70 backdrop-blur-lg shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -45,9 +61,9 @@ export function Header({
           >
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <img
-                src="/assets/Business Logo.png" // path to your logo in public folder
-                alt="WeEditCo Logo" // accessibility text
-                className="h-10 w-auto" // adjust size with Tailwind classes
+                src="/assets/Business Logo.png"
+                alt="WeEditCo Logo"
+                className="h-10 w-auto"
               />
             </div>
             <span className="text-xl font-bold bg-gradient-secondary bg-clip-text text-transparent">
@@ -78,14 +94,7 @@ export function Header({
 
           {/* Right side actions */}
           <div className="flex items-center space-x-3">
-            {/* Theme toggle */}
-            {/* < div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-surface-elevated transition-colors">
-              <Sun className="h-4 w-4" />
-              <Switch checked={isDark} onCheckedChange={onThemeToggle} />
-              <Moon className="h-4 w-4" />
-            </div>*/}
-
-            {/* Cart button */}
+            {/* Cart */}
             <Button
               variant="outline"
               size="sm"
@@ -102,6 +111,7 @@ export function Header({
               </div>
             </Button>
 
+            {/* Orders */}
             <Button
               variant="outline"
               size="sm"
@@ -114,7 +124,24 @@ export function Header({
               History
             </Button>
 
-            {/* Mobile menu button */}
+            {/* 🔐 Admin (revealed by Ctrl+Shift+A) */}
+            {showAdmin && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleNavClick("admin")}
+                className={`hidden md:flex btn-hover-accent ${
+                  currentPage === "admin"
+                    ? "bg-gradient-primary text-white"
+                    : ""
+                }`}
+              >
+                <Settings className="h-4 w-4 mr-1" />
+                Admin
+              </Button>
+            )}
+
+            {/* Mobile Menu */}
             <Button
               variant="ghost"
               size="sm"

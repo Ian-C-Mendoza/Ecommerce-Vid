@@ -3,7 +3,6 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
 import { ImageWithFallback } from "../figma/ImageWithFallback";
 import {
@@ -11,7 +10,6 @@ import {
   Minus,
   Plus,
   Trash2,
-  ShoppingCart,
   CreditCard,
   Shield,
   Clock,
@@ -28,6 +26,7 @@ export function Cart({
   const [promoCode, setPromoCode] = useState("");
   const [isPromoApplied, setIsPromoApplied] = useState(false);
 
+  // Subtotal calculates each item based on its plan and addons
   const subtotal = cartItems.reduce((sum, item) => {
     if (!item.service) return sum;
 
@@ -36,7 +35,7 @@ export function Cart({
       return addonSum + (addon?.price || 0);
     }, 0);
 
-    // Use plan price if you want to differentiate monthly vs one-time
+    // Monthly price is same as service.price here; Stripe subscription handled separately
     const planPrice =
       item.plan === "monthly" ? item.service.price : item.service.price;
 
@@ -53,7 +52,8 @@ export function Cart({
   };
 
   const handleCheckout = () => {
-    onCheckout();
+    // Pass full cart with plan info to backend / checkout
+    onCheckout(cartItems);
   };
 
   if (cartItems.length === 0) {
@@ -64,12 +64,10 @@ export function Cart({
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Services
           </Button>
-
           <div className="text-center py-16">
-            <ShoppingCart className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h1 className="text-3xl font-bold mb-2">Your Cart is Empty</h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Add some services to get started with your video editing project.
+              Add some services to get started.
             </p>
             <Button
               onClick={onBack}
@@ -124,14 +122,13 @@ export function Cart({
                             <h3 className="font-semibold text-lg">
                               {item.service.title}
                             </h3>
-
                             <p className="text-sm text-muted-foreground">
                               {item.service.description}
                             </p>
                             <Badge variant="outline" className="mt-1">
                               {item.service.category}
                             </Badge>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mt-1">
                               Plan:{" "}
                               <span className="text-blue-600">
                                 {item.plan === "monthly"
@@ -146,7 +143,6 @@ export function Cart({
                             onClick={() => onRemoveItem(index)}
                             className="hover:bg-destructive/10"
                           >
-                            {/* 🆕 Always show red icon, visible in both modes */}
                             <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
                           </Button>
                         </div>
@@ -213,7 +209,6 @@ export function Cart({
                                 }, 0)) *
                                 item.quantity}
                             </div>
-
                             <div className="text-sm text-muted-foreground">
                               ${item.service.price} × {item.quantity}
                               {item.addons.length > 0 && " + add-ons"}
@@ -302,32 +297,6 @@ export function Cart({
                 <div className="flex items-center space-x-3 text-sm">
                   <Clock className="w-4 h-4 text-blue-500" />
                   <span>Fast Delivery Guaranteed</span>
-                </div>
-                <div className="flex items-center space-x-3 text-sm">
-                  <CreditCard className="w-4 h-4 text-purple-500" />
-                  <span>Multiple Payment Options</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Estimated Delivery */}
-            <Card className="border border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Estimated Delivery</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {cartItems.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="truncate">{item.service.title}</span>
-                      <span className="text-muted-foreground">
-                        {item.service.duration}
-                      </span>
-                    </div>
-                  ))}
                 </div>
               </CardContent>
             </Card>

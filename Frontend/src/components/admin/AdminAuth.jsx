@@ -42,24 +42,33 @@ export function AdminAuth({ onLogin }) {
       });
 
       const data = await res.json();
+      console.log("LOGIN RESPONSE:", data);
 
       if (!res.ok) {
         toast.error(data.message || "Invalid credentials");
         return;
       }
 
-      toast.success("Login successful! Welcome back.");
+      toast.success("Login successful!");
 
-      // ✅ Save tokens properly
+      // Save tokens
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ Proceed after login
+      // Save user (backend sends user data directly)
+      localStorage.setItem("user", JSON.stringify(data));
+
+      // ROLE CHECK 🔥
+      if (data.role !== "admin") {
+        toast.error("Access denied. Admins only.");
+        return;
+      }
+
+      // Proceed
       if (onLogin) {
-        onLogin(data.user);
+        onLogin(data);
       } else {
-        window.location.href = "/dashboard"; // fallback route
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       console.error("❌ Login error:", error);
@@ -138,7 +147,7 @@ export function AdminAuth({ onLogin }) {
               </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  ReelWorks
+                  WeEdit Co{" "}
                 </h1>
                 <p className="text-muted-foreground">Admin Dashboard</p>
               </div>
@@ -234,7 +243,7 @@ export function AdminAuth({ onLogin }) {
               <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <CardTitle className="text-2xl">ReelWorks Admin Portal</CardTitle>
+              <CardTitle className="text-2xl">WeEdit Co Admin Portal</CardTitle>
               <p className="text-muted-foreground">
                 Sign in to access your professional dashboard
               </p>

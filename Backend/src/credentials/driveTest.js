@@ -1,18 +1,18 @@
 import { google } from "googleapis";
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: "new-credentials.json",
+  keyFile: "newestcredentials.json",
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
 
 const drive = google.drive({ version: "v3", auth });
 
-async function createClientFolder(clientEmail) {
+export async function createClientFolder(clientEmail) {
   const folder = await drive.files.create({
     resource: {
       name: `Client_${clientEmail}_${Date.now()}`,
       mimeType: "application/vnd.google-apps.folder",
-      parents: ["1WmHYwKBvtzJghEBoj-akkk1BQtpfCm0J"], // ID of 'Client Uploads'
+      parents: ["1Pur_3HEklJM9nEDgoQHekfl3HW13M5GK"], // ID of 'Client Uploads'
     },
     fields: "id",
   });

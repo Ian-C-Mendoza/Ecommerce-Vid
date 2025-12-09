@@ -165,6 +165,7 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;

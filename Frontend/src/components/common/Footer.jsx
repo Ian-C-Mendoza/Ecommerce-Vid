@@ -1,25 +1,9 @@
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-} from "lucide-react";
-import { useNavigate } from "react-router-dom"; // ✅ added
+import { Mail, Phone, MapPin, Instagram } from "lucide-react";
+import { services } from "../../data/mockData"; // ✅ import services from mockData
 
-export function Footer() {
-  const navigate = useNavigate(); // ✅ router navigation
-
-  const handleNavigate = (path) => {
-    navigate(path);
-    window.scrollTo({ top: 0, behavior: "smooth" }); // smooth scroll on nav
-  };
-
+export function Footer({ onSelectService }) {
   return (
     <footer className="relative overflow-hidden">
       {/* Enhanced footer background */}
@@ -35,15 +19,12 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="space-y-4">
-              <div
-                className="flex items-center space-x-2 cursor-pointer"
-                onClick={() => handleNavigate("/")}
-              >
+              <div className="flex items-center space-x-2 cursor-pointer">
                 <div className="bg-gradient-primary rounded-lg p-2 shadow-lg">
                   <div className="w-6 h-6 bg-white rounded shadow-sm"></div>
                 </div>
                 <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  WeEdit Co.{" "}
+                  WeEdit Co.
                 </span>
               </div>
               <p className="text-muted-foreground">
@@ -52,34 +33,19 @@ export function Footer() {
                 needs.
               </p>
               <div className="flex space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-surface-elevated"
+                <a
+                  href="https://www.instagram.com/we.editco/?igsh=b3N6ZnJkb2dwaXZ3#"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  <Facebook className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-surface-elevated"
-                >
-                  <Twitter className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-surface-elevated"
-                >
-                  <Instagram className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="hover:bg-surface-elevated"
-                >
-                  <Youtube className="h-4 w-4" />
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hover:bg-surface-elevated"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </Button>
+                </a>
               </div>
             </div>
 
@@ -87,36 +53,15 @@ export function Footer() {
             <div className="space-y-4">
               <h3 className="font-semibold">Services</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/services")}
-                >
-                  Basic Editing
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/services")}
-                >
-                  Advanced Effects
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/services")}
-                >
-                  Color Grading
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/services")}
-                >
-                  Motion Graphics
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/services")}
-                >
-                  Sound Design
-                </li>
+                {services.map((service) => (
+                  <li
+                    key={service.id}
+                    className="hover:text-foreground transition-colors cursor-pointer"
+                    onClick={() => onSelectService(service)}
+                  >
+                    {service.title}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -126,33 +71,42 @@ export function Footer() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li
                   className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/portfolio")}
-                >
-                  Portfolio
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/pricing")}
+                  onClick={() => {
+                    const section = document.getElementById("services");
+                    if (section)
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                  }}
                 >
                   Pricing
                 </li>
                 <li
                   className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/faq")}
+                  onClick={() => {
+                    const section = document.getElementById("contact");
+                    if (section)
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                  }}
                 >
                   FAQ
                 </li>
                 <li
                   className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/blog")}
+                  onClick={() => {
+                    const section = document.getElementById("home");
+                    if (section)
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                  }}
                 >
                   Blog
-                </li>
-                <li
-                  className="hover:text-foreground transition-colors cursor-pointer"
-                  onClick={() => handleNavigate("/support")}
-                >
-                  Support
                 </li>
               </ul>
             </div>
@@ -163,31 +117,15 @@ export function Footer() {
               <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>hello@Weeditco.com</span>
+                  <span>management@weeditco.network</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Phone className="h-4 w-4" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>+1 (323) 238-2758</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-4 w-4" />
-                  <span>New York, NY</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Stay Updated</h4>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Enter your email"
-                    className="bg-background/50 border-white/20 focus:border-primary"
-                  />
-                  <Button
-                    size="sm"
-                    className="bg-gradient-primary hover:bg-gradient-secondary btn-hover-primary"
-                  >
-                    Subscribe
-                  </Button>
+                  <span>Your Address Here</span>
                 </div>
               </div>
             </div>
@@ -200,22 +138,13 @@ export function Footer() {
               © {new Date().getFullYear()} Weeditco. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm text-muted-foreground">
-              <span
-                className="hover:text-foreground transition-colors cursor-pointer"
-                onClick={() => handleNavigate("/privacy")}
-              >
+              <span className="hover:text-foreground transition-colors cursor-pointer">
                 Privacy Policy
               </span>
-              <span
-                className="hover:text-foreground transition-colors cursor-pointer"
-                onClick={() => handleNavigate("/terms")}
-              >
+              <span className="hover:text-foreground transition-colors cursor-pointer">
                 Terms of Service
               </span>
-              <span
-                className="hover:text-foreground transition-colors cursor-pointer"
-                onClick={() => handleNavigate("/cookies")}
-              >
+              <span className="hover:text-foreground transition-colors cursor-pointer">
                 Cookie Policy
               </span>
             </div>

@@ -19,6 +19,7 @@ import {
 import {
   BarChart3,
   Package,
+  Repeat,
   Users,
   Settings,
   Shield,
@@ -27,6 +28,7 @@ import {
   Home,
   Moon,
   Sun,
+  Mail,
 } from "lucide-react";
 import { Switch } from "../ui/switch";
 import { toast } from "sonner@2.0.3";
@@ -45,10 +47,22 @@ const sidebarItems = [
     description: "Manage customer orders",
   },
   {
+    title: "Subscriptions",
+    icon: Repeat, // or any subscription-like icon you want to use
+    id: "subscriptions",
+    description: "Manage customer subscriptions",
+  },
+  {
     title: "Customers",
     icon: Users,
     id: "customers",
     description: "Customer management",
+  },
+  {
+    title: "Inbox",
+    icon: Mail,
+    id: "inbox",
+    description: "User messages and inquiries",
   },
   {
     title: "Testimonials",
@@ -236,7 +250,7 @@ export function AdminLayout({
               </div>
               <div className="text-left">
                 <h2 className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
-                  ReelWorks
+                  WeEdit.Co{" "}
                 </h2>
                 <p className="text-xs text-muted-foreground">Admin Dashboard</p>
               </div>

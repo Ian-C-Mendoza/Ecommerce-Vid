@@ -9,7 +9,6 @@ import { Cart } from "./components/pages/Cart";
 import { OrderHistory } from "./components/pages/OrderHistory";
 import { Checkout } from "./components/pages/Checkout";
 import { Portfolio } from "./components/pages/Portfolio";
-import { Testimonials } from "./components/pages/Testimonials";
 import { ChatSupport } from "./components/common/ChatSupport";
 import { AdminWrapper } from "./components/admin/AdminWrapper";
 import { Footer } from "./components/common/Footer";
@@ -200,7 +199,7 @@ export default function App() {
           <div className="py-20">
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto text-center space-y-8">
-                <h1 className="text-4xl lg:text-5xl">About ReelWorks</h1>
+                <h1 className="text-4xl lg:text-5xl">About WeEdit Co</h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
                   We are a team of passionate video editors and creative
                   professionals dedicated to bringing your vision to life. With
@@ -259,10 +258,6 @@ export default function App() {
             <section id="contact" className="scroll-mt-20">
               <ContactSection />
             </section>
-
-            <section id="about" className="scroll-mt-20">
-              <Testimonials />
-            </section>
           </>
         );
     }
@@ -294,7 +289,9 @@ export default function App() {
       <main className="relative z-10">{renderPage()}</main>
 
       {/*currentPage !== "admin" && <ChatSupport />*/}
-      {currentPage !== "admin" && <Footer />}
+      {currentPage !== "admin" && (
+        <Footer onSelectService={handleSelectService} />
+      )}
 
       <Toaster />
     </div>
