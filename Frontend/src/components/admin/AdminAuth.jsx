@@ -29,7 +29,8 @@ export function AdminAuth({ onLogin }) {
   });
 
   // 🔹 Set backend base URL
-  const BACKEND_URL = "http://localhost:5000";
+  //const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = "https://weedit-co.onrender.com";
 
   // 🔹 Handle Login
   const handleLogin = async (e) => {

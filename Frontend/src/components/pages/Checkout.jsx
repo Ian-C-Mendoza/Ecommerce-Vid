@@ -16,7 +16,8 @@ import { CreditCard } from "lucide-react";
 import ClientAuth from "../admin/ClientAuth";
 import { addons as HARDCODED_ADDONS } from "../../data/mockData";
 
-const BACKEND_URL = "http://localhost:5000";
+//const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = "https://weedit-co.onrender.com";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 export function Checkout({

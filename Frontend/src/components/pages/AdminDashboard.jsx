@@ -280,6 +280,9 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   const [customerData, setCustomerData] = useState([]);
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
 
+  //const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = "https://weedit-co.onrender.com";
+
   useEffect(() => {
     async function fetchOrders() {
       setIsLoadingOrders(true);
@@ -311,7 +314,7 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
         }
 
         // 🔹 Fetch from backend
-        const res = await axios.get("http://localhost:5000/api/orders", {
+        const res = await axios.get(`${BACKEND_URL}/api/orders`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           withCredentials: true,
         });
@@ -384,7 +387,7 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
         }
 
         // 🔹 Fetch from backend
-        const res = await axios.get("http://localhost:5000/api/subscriptions", {
+        const res = await axios.get(`${BACKEND_URL}/api/subscriptions`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           withCredentials: true,
         });

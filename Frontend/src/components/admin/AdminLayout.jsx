@@ -48,7 +48,7 @@ const sidebarItems = [
   },
   {
     title: "Subscriptions",
-    icon: Repeat, // or any subscription-like icon you want to use
+    icon: Repeat,
     id: "subscriptions",
     description: "Manage customer subscriptions",
   },
@@ -91,6 +91,9 @@ export function AdminLayout({
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const unreadCount = notifications.filter((n) => n.unread).length;
 
+  //const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = "https://weedit-co.onrender.com";
+
   // ✅ Fetch user (Supabase first → fallback API)
   useEffect(() => {
     async function fetchUser() {
@@ -108,7 +111,7 @@ export function AdminLayout({
           console.log(
             "🟢 Supabase session found, fetching user from backend..."
           );
-          const res = await axios.get("http://localhost:5000/api/auth/user", {
+          const res = await axios.get(`${BACKEND_URL}/api/auth/user`, {
             headers: { Authorization: `Bearer ${session.access_token}` },
             withCredentials: true,
           });
@@ -127,7 +130,7 @@ export function AdminLayout({
         if (accessToken) {
           try {
             console.log("🟠 Using stored access token for user fetch...");
-            const res = await axios.get("http://localhost:5000/api/auth/user", {
+            const res = await axios.get(`${BACKEND_URL}/api/auth/user`, {
               headers: { Authorization: `Bearer ${accessToken}` },
               withCredentials: true,
             });
@@ -144,7 +147,7 @@ export function AdminLayout({
             ) {
               console.warn("♻️ Access token expired — refreshing...");
               const refreshRes = await axios.post(
-                "http://localhost:5000/api/auth/refresh",
+                `${BACKEND_URL}/api/auth/refresh`,
                 { token: refreshToken }
               );
 
@@ -152,13 +155,10 @@ export function AdminLayout({
               localStorage.setItem("accessToken", accessToken);
 
               // Retry user fetch with new access token
-              const res = await axios.get(
-                "http://localhost:5000/api/auth/user",
-                {
-                  headers: { Authorization: `Bearer ${accessToken}` },
-                  withCredentials: true,
-                }
-              );
+              const res = await axios.get(`${BACKEND_URL}/api/auth/user`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+                withCredentials: true,
+              });
 
               setCurrentUser(res.data);
               console.log("✅ User refreshed and fetched:", res.data);
@@ -173,7 +173,7 @@ export function AdminLayout({
         console.warn(
           "⚠️ No active Supabase session or tokens. Checking backend cookie..."
         );
-        const res = await axios.get("http://localhost:5000/api/auth/user", {
+        const res = await axios.get(`${BACKEND_URL}/api/auth/user`, {
           withCredentials: true,
         });
 
@@ -221,7 +221,7 @@ export function AdminLayout({
       localStorage.removeItem("user");
 
       await axios.post(
-        "http://localhost:5000/api/auth/logout",
+        `${BACKEND_URL}/api/auth/logout`,
         {},
         { withCredentials: true }
       );
