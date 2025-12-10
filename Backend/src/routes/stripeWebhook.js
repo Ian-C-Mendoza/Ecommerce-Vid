@@ -20,10 +20,16 @@ function formatDateNice(date) {
 }
 
 // ---------------- GOOGLE DRIVE SETUP ----------------
+const rawServiceJSON = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+
+// Convert the private key to real line breaks
+rawServiceJSON.private_key = rawServiceJSON.private_key.replace(/\\n/g, "\n");
+
 const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON),
+  credentials: rawServiceJSON,
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
+
 const drive = google.drive({ version: "v3", auth });
 
 // Cache
