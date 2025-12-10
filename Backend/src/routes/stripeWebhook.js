@@ -9,7 +9,6 @@ dotenv.config();
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// ------------------- Helpers -------------------
 function formatDateNice(date) {
   if (!date) return "N/A";
   return date.toLocaleDateString("en-US", {
@@ -20,13 +19,15 @@ function formatDateNice(date) {
 }
 
 // ---------------- GOOGLE DRIVE SETUP ----------------
-const rawServiceJSON = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-
-// Convert the private key to real line breaks
-rawServiceJSON.private_key = rawServiceJSON.private_key.replace(/\\n/g, "\n");
-
 const auth = new google.auth.GoogleAuth({
-  credentials: rawServiceJSON,
+  credentials: {
+    type: process.env.GOOGLE_TYPE,
+    project_id: process.env.GOOGLE_PROJECT_ID,
+    private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+  },
   scopes: ["https://www.googleapis.com/auth/drive"],
 });
 
@@ -90,9 +91,9 @@ async function createPurchaseSubfolder(userFolderId, purchaseId) {
 // ------------------- WEBHOOK -------------------
 router.post(
   "/webhook",
-  // ⚠️ Must use raw body to verify Stripe signature
   express.raw({ type: "application/json" }),
   async (req, res) => {
+    console.log("🚀 Webhook received! Event headers:", req.headers);
     const sig = req.headers["stripe-signature"];
     let event;
 
@@ -102,9 +103,8 @@ router.post(
         sig,
         process.env.STRIPE_WEBHOOK_SECRET
       );
-      console.log("✅ Stripe webhook verified:", event.type);
     } catch (err) {
-      console.error("❌ Stripe signature verification failed:", err.message);
+      console.error("❌ Webhook signature verification failed:", err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
@@ -130,18 +130,18 @@ router.post(
           to: customerEmail,
           subject: "✅ Payment Received – Upload Your Raw Files",
           html: `
-            <div>
-              <h2>Payment Confirmation</h2>
-              <p>Hi ${paymentIntent.shipping?.name || "Valued Customer"},</p>
-              <p>We received your payment ✅</p>
-              <p><strong>Amount Paid:</strong> $${(
-                paymentIntent.amount / 100
-              ).toFixed(2)}</p>
-              <p><strong>Order ID:</strong> ${paymentIntent.id}</p>
-              <p>Please upload your raw files using the link below:</p>
-              <p><a href="${folderLink}" target="_blank">${folderLink}</a></p>
-            </div>
-          `,
+          <div>
+            <h2>Payment Confirmation</h2>
+            <p>Hi ${paymentIntent.shipping?.name || "Valued Customer"},</p>
+            <p>We received your payment ✅</p>
+            <p><strong>Amount Paid:</strong> $${(
+              paymentIntent.amount / 100
+            ).toFixed(2)}</p>
+            <p><strong>Order ID:</strong> ${paymentIntent.id}</p>
+            <p>Please upload your raw files using the link below:</p>
+            <p><a href="${folderLink}" target="_blank">${folderLink}</a></p>
+          </div>
+        `,
         });
 
         console.log("✅ One-time payment processed for:", customerEmail);
@@ -151,36 +151,55 @@ router.post(
       if (event.type === "invoice.payment_succeeded") {
         const invoice = event.data.object;
 
+        console.log(
+          "💰 invoice.payment_succeeded received for invoice:",
+          invoice.id
+        );
+
         const customer = await stripe.customers.retrieve(invoice.customer, {
           expand: ["subscriptions"],
         });
 
         const email = invoice.customer_email || customer.email;
 
-        if (!email) return res.status(200).json({ received: true });
+        if (!email) {
+          console.log("⚠️ No email found for invoice:", invoice.id);
+          return res.status(200).json({ received: true });
+        }
 
+        // Get subscription ID
         const subscriptionId =
           invoice.subscription || customer?.subscriptions?.data?.[0]?.id;
 
+        let subscription = null;
         let planNames = [];
         let startDate = null;
         let endDate = null;
 
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(
-            subscriptionId
-          );
-          const subItem = subscription.items.data[0];
-          startDate = new Date(subItem.current_period_start * 1000);
-          endDate = new Date(subItem.current_period_end * 1000);
+          try {
+            subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-          planNames = await Promise.all(
-            subscription.items.data.map(async (i) => {
-              if (i.price.nickname) return i.price.nickname;
-              const product = await stripe.products.retrieve(i.price.product);
-              return product.name || product.id;
-            })
-          );
+            // SAFE FIELDS
+            const subItem = subscription.items.data[0];
+            startDate = new Date(subItem.current_period_start * 1000);
+            endDate = new Date(subItem.current_period_end * 1000);
+
+            planNames = await Promise.all(
+              subscription.items.data.map(async (i) => {
+                if (i.price.nickname) return i.price.nickname; // use nickname if available
+                // Fetch product info
+                const product = await stripe.products.retrieve(i.price.product);
+                return product.name || product.id; // fallback to ID if name is missing
+              })
+            );
+          } catch (err) {
+            console.error(
+              "❌ Failed to fetch subscription for invoice:",
+              invoice.id,
+              err.message
+            );
+          }
         }
 
         const userFolderId = await getOrCreateUserFolder(email);
@@ -195,37 +214,37 @@ router.post(
             ? "🎉 Subscription Activated!"
             : "✅ Payment Received",
           html: `
-            <div>
-              <h2>${
-                subscriptionId
-                  ? "Subscription Confirmation"
-                  : "Payment Confirmation"
-              }</h2>
-              <p>Hi ${customer.name || "Valued Customer"},</p>
-              ${
-                subscriptionId
-                  ? `<p>Your subscription is now <strong>ACTIVE</strong> 🚀</p>
-                     <p><strong>Plan:</strong> ${planNames.join(", ")}</p>
-                     <p><strong>Start:</strong> ${formatDateNice(startDate)}</p>
-                     <p><strong>Next Billing:</strong> ${formatDateNice(
-                       endDate
-                     )}</p>`
-                  : `<p>We received your payment ✅</p>
-                     <p><strong>Amount Paid:</strong> $${(
-                       invoice.amount_paid / 100
-                     ).toFixed(2)}</p>`
-              }
-              <p>Upload your raw files here:</p>
-              <p><a href="${folderLink}" target="_blank">${folderLink}</a></p>
-            </div>
-          `,
+      <div>
+        <h2>${
+          subscriptionId ? "Subscription Confirmation" : "Payment Confirmation"
+        }</h2>
+        <p>Hi ${customer.name || "Valued Customer"},</p>
+        ${
+          subscriptionId
+            ? `
+              <p>Your subscription is now <strong>ACTIVE</strong> 🚀</p>
+              <p><strong>Plan:</strong> ${planNames.join(", ")}</p>
+              <p><strong>Start:</strong> ${formatDateNice(startDate)}</p>
+              <p><strong>Next Billing:</strong> ${formatDateNice(endDate)}</p>
+            `
+            : `
+              <p>We received your payment ✅</p>
+              <p><strong>Amount Paid:</strong> $${(
+                invoice.amount_paid / 100
+              ).toFixed(2)}</p>
+            `
+        }
+        <p>Upload your raw files here:</p>
+        <p><a href="${folderLink}" target="_blank">${folderLink}</a></p>
+      </div>
+    `,
         });
 
         console.log("📧 Email sent successfully to:", email);
         console.log("✅ Invoice processed for:", email);
       }
     } catch (err) {
-      console.error("❌ Error processing webhook:", err.stack || err.message);
+      console.error("❌ Error processing webhook:", err.message);
     }
 
     res.status(200).json({ received: true });
