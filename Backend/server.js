@@ -63,8 +63,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://weedit-co.onrender.com",
-      "https://weeditco.netlify.app", // 👉 Add your Netlify URL here
+      "https://weedit-co.onrender.com", // backend itself
+      "https://weeditco.com", // your live frontend
+      "https://weeditco.netlify.app", // if still using Netlify for testing
     ],
     credentials: true,
   })
