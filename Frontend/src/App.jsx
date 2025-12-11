@@ -201,31 +201,32 @@ export default function App() {
               <div className="max-w-4xl mx-auto text-center space-y-8">
                 <h1 className="text-4xl lg:text-5xl">About WeEdit Co</h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  We are a team of passionate video editors and creative
-                  professionals dedicated to bringing your vision to life. With
-                  over 5 years of experience and 500+ completed projects, we
-                  understand what it takes to create compelling video content
-                  that engages audiences and drives results.
+                  “WeEdit Co empowers brands with polished, professional video
+                  content that enhances visibility and keeps your online
+                  presence active and compelling so they can focus on what
+                  matters most in their business. Backed by a skilled team of
+                  editors, we deliver consistent, high-quality results that
+                  support your marketing and business growth.”
                 </p>
                 <div className="grid md:grid-cols-3 gap-8 mt-12">
                   <div className="space-y-4">
                     <div className="text-3xl font-bold text-primary">5+</div>
                     <div className="text-lg font-medium">
-                      Years of Experience
+                      Experienced Creative Team
                     </div>
                     <p className="text-muted-foreground">
-                      Serving clients across various industries with
-                      professional video editing services.
+                      Years of proven editing expertise across various
+                      industries and content styles.
                     </p>
                   </div>
                   <div className="space-y-4">
                     <div className="text-3xl font-bold text-primary">500+</div>
                     <div className="text-lg font-medium">
-                      Projects Completed
+                      Trusted by Growing Businesses
                     </div>
                     <p className="text-muted-foreground">
-                      From corporate videos to personal projects, we've
-                      delivered exceptional results.
+                      Brands and entrepreneurs rely on us for consistent,
+                      highquality video content.
                     </p>
                   </div>
                   <div className="space-y-4">
@@ -234,8 +235,8 @@ export default function App() {
                       Client Satisfaction
                     </div>
                     <p className="text-muted-foreground">
-                      Our commitment to quality and customer service speaks for
-                      itself.
+                      Our dedication to quality and smooth communication keeps
+                      clients coming back.
                     </p>
                   </div>
                 </div>

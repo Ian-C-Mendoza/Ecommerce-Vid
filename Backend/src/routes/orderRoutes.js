@@ -51,10 +51,13 @@ router.post("/create", async (req, res) => {
         .json({ error: `Invalid payment method: ${payment_method}` });
     }
 
-    // 2️⃣ Validate services based on `service_code`
+    // 2️⃣ Validate services
     for (const item of cartItems) {
+      // Allow custom packages with IDs starting with "custom-"
+      const isCustom = item.service_code?.toString().startsWith("custom-");
       const match = HARDCODED_SERVICES.find((s) => s.id === item.service_code);
-      if (!match) {
+
+      if (!match && !isCustom) {
         return res
           .status(400)
           .json({ error: `Invalid service ID: ${item.service_code}` });
@@ -92,20 +95,22 @@ router.post("/create", async (req, res) => {
 
     if (detailsError) throw detailsError;
 
-    // 5️⃣ Insert order_items (no FK to services)
-    const orderItems = cartItems.map((item) => ({
-      order_id: order.id,
-      service_code: item.service_code, // "1" | "2" | "3"
-      title:
-        item.title ||
-        HARDCODED_SERVICES.find((s) => s.id === item.service_code)?.title,
-      quantity: item.quantity || 1,
-      price:
-        item.price ||
-        HARDCODED_SERVICES.find((s) => s.id === item.service_code)?.price,
-    }));
+    // 5️⃣ Insert order_items
+    const orderItems = cartItems.map((item) => {
+      // If custom, take price/title from payload; else, fallback to HARDCODED_SERVICES
+      const isCustom = item.service_code?.toString().startsWith("custom-");
+      const serviceData = HARDCODED_SERVICES.find(
+        (s) => s.id === item.service_code
+      );
 
-    console.log("🛒 Final orderItems to insert:", orderItems);
+      return {
+        order_id: order.id,
+        service_code: item.service_code,
+        title: item.title || serviceData?.title || "Custom Package",
+        quantity: item.quantity || 1,
+        price: item.price || serviceData?.price || 0,
+      };
+    });
 
     const { data: insertedItems, error: itemsError } = await supabase
       .from("order_items")
@@ -114,9 +119,8 @@ router.post("/create", async (req, res) => {
 
     if (itemsError) throw itemsError;
 
-    // 6️⃣ Insert Addons — safer mapping
+    // 6️⃣ Insert Addons
     const addonInserts = [];
-
     cartItems.forEach((item) => {
       const matchingItem = insertedItems.find(
         (inserted) => inserted.service_code === item.service_code
@@ -129,7 +133,7 @@ router.post("/create", async (req, res) => {
 
       (item.addons || []).forEach((addon) => {
         addonInserts.push({
-          order_item_id: matchingItem.id, // ✅ correct FK reference
+          order_item_id: matchingItem.id,
           addon_name: addon.title || addon.name,
           price: addon.price || 0,
         });
@@ -144,7 +148,7 @@ router.post("/create", async (req, res) => {
       if (addonsError) throw addonsError;
     }
 
-    // ✅ All good
+    // ✅ All done
     res.status(200).json({
       message: "✅ Order saved successfully!",
       order_id: order.id,

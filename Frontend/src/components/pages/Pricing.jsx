@@ -1,13 +1,43 @@
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Check, Star } from "lucide-react";
 import { services } from "../../data/mockData";
+import { CustomBuilder } from "../pages/CustomBuilder";
+import { CustomPackageBuilder } from "../pages/CustomPackageBuilder";
 
 export function Pricing({ onSelectService }) {
+  const [isCustomBuilderOpen, setIsCustomBuilderOpen] = useState(false);
+
+  // Open the custom package builder
+  const handleOpenCustomBuilder = () => {
+    setIsCustomBuilderOpen(true);
+  };
+
+  // Back to pricing
+  const handleBackToPricing = () => {
+    setIsCustomBuilderOpen(false);
+  };
+
+  // When user completes building a custom package
+  const handleCustomPackageFinish = (customServiceObject) => {
+    onSelectService(customServiceObject); // goes to ServiceDetails
+  };
+
+  // If custom builder is open → show the builder page
+  if (isCustomBuilderOpen) {
+    return (
+      <CustomPackageBuilder
+        onBack={handleBackToPricing}
+        onSelectService={handleCustomPackageFinish}
+      />
+    );
+  }
+
+  // MAIN PRICING PAGE
   return (
     <section className="section-spacing relative overflow-hidden" id="pricing">
-      {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-1/4 left-0 w-48 sm:w-64 h-48 sm:h-64 bg-gradient-to-r from-blue-400/10 to-transparent rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 right-0 w-64 sm:w-80 h-64 sm:h-80 bg-gradient-to-l from-purple-400/10 to-transparent rounded-full blur-3xl"></div>
@@ -106,42 +136,9 @@ export function Pricing({ onSelectService }) {
               </CardContent>
             </Card>
           ))}
-        </div>
 
-        {/* Additional info */}
-        <div className="text-center mt-10 sm:mt-12 space-y-4">
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-lg sm:text-xl mb-6">
-              Why Choose{" "}
-              <span className="bg-gradient-accent bg-clip-text text-transparent">
-                Weeditco
-              </span>
-              ?
-            </h3>
-            <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
-              <div className="space-y-2">
-                <div className="text-2xl">⚡</div>
-                <h4 className="font-semibold text-sm">Lightning Fast</h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Most projects delivered within 24-48 hours
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="text-2xl">🎨</div>
-                <h4 className="font-semibold text-sm">Professional Quality</h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Edited by professionals with 5+ years experience
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="text-2xl">🔄</div>
-                <h4 className="font-semibold text-sm">Fast Revisions</h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  We work until you're 100%
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Custom Package Button */}
+          <CustomBuilder onBuild={handleOpenCustomBuilder} />
         </div>
       </div>
     </section>
