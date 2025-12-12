@@ -105,15 +105,9 @@ router.post("/create-payment-intent", async (req, res) => {
 
 router.post("/create-subscription", async (req, res) => {
   try {
-    const { email, priceId, paymentMethodId } = req.body;
+    const { email, priceId, paymentMethodId, customPackage } = req.body;
 
-    console.log("📩 Incoming subscription request:", {
-      email,
-      priceId,
-      paymentMethodId,
-    });
-
-    if (!email || !priceId) {
+    if (!email || (!priceId && !customPackage)) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -126,7 +120,7 @@ router.post("/create-subscription", async (req, res) => {
       console.log("➕ New customer created:", customer.id);
     }
 
-    // 2️⃣ If NO paymentMethod → create SetupIntent (your current flow)
+    // 2️⃣ If NO paymentMethod → create SetupIntent
     if (!paymentMethodId) {
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
@@ -136,10 +130,30 @@ router.post("/create-subscription", async (req, res) => {
       return res.json({ clientSecret: setupIntent.client_secret });
     }
 
-    // 3️⃣ Create subscription (with payment)
+    // 3️⃣ Handle custom package price dynamically
+    let finalPriceId = priceId;
+
+    if (customPackage) {
+      // Create a Stripe Product for this custom package
+      const product = await stripe.products.create({
+        name: `Custom Package for ${email}`,
+      });
+
+      // Create a Stripe Price object (recurring monthly)
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: Math.round(customPackage.price * 100), // in cents
+        currency: "usd",
+        recurring: { interval: "month" },
+      });
+
+      finalPriceId = price.id;
+    }
+
+    // 4️⃣ Create subscription (existing flow)
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [{ price: priceId }],
+      items: [{ price: finalPriceId }],
       default_payment_method: paymentMethodId,
       expand: ["latest_invoice.payment_intent"],
     });
@@ -149,24 +163,22 @@ router.post("/create-subscription", async (req, res) => {
     const latestInvoice = subscription.latest_invoice;
     const paymentIntent = latestInvoice?.payment_intent;
 
-    let planNames = [];
-    let date_created = null;
-    let next_billing = null;
-    // 4️⃣ Extract billing dates
+    // 5️⃣ Prepare subscription info for DB
     const subItem = subscription.items.data[0];
-    date_created = new Date(subItem.current_period_start * 1000);
-    next_billing = new Date(subItem.current_period_end * 1000);
+    const date_created = new Date(subItem.current_period_start * 1000);
+    const next_billing = new Date(subItem.current_period_end * 1000);
 
-    planNames = await Promise.all(
-      subscription.items.data.map(async (i) => {
-        if (i.price.nickname) return i.price.nickname; // use nickname if available
-        // Fetch product info
-        const product = await stripe.products.retrieve(i.price.product);
-        return product.name || product.id; // fallback to ID if name is missing
-      })
-    );
+    const planNames = customPackage
+      ? [`Custom Package: ${customPackage.title}`]
+      : await Promise.all(
+          subscription.items.data.map(async (i) => {
+            if (i.price.nickname) return i.price.nickname;
+            const product = await stripe.products.retrieve(i.price.product);
+            return product.name || product.id;
+          })
+        );
 
-    // 5️⃣ Fetch user from Supabase by email
+    // 6️⃣ Fetch user ID from Supabase
     const { data: userData, error: userErr } = await supabase
       .from("users")
       .select("id")
@@ -178,7 +190,7 @@ router.post("/create-subscription", async (req, res) => {
       return res.status(400).json({ error: "User not found in DB" });
     }
 
-    // 6️⃣ Insert record into subscriptions table
+    // 7️⃣ Insert into subscriptions table
     const { error: insertErr } = await supabase.from("subscriptions").insert([
       {
         user_id: userData.id,
@@ -186,17 +198,15 @@ router.post("/create-subscription", async (req, res) => {
         date_created,
         next_billing,
         status: "active",
-        stripe_subscription_id: subscription.id, // 🔥 ADD THIS
+        stripe_subscription_id: subscription.id,
+        custom_details: customPackage ? JSON.stringify(customPackage) : null,
       },
     ]);
 
-    if (insertErr) {
-      console.error("❌ Supabase insert failed:", insertErr);
-    } else {
-      console.log("🟢 Subscription saved in DB!");
-    }
+    if (insertErr) console.error("❌ Supabase insert failed:", insertErr);
+    else console.log("🟢 Subscription saved in DB!");
 
-    // 7️⃣ Respond to frontend
+    // 8️⃣ Respond to frontend
     return res.json({
       subscriptionId: subscription.id,
       clientSecret: paymentIntent?.client_secret || null,
