@@ -205,6 +205,7 @@ router.post("/create-subscription", async (req, res) => {
         error: "Subscription created in Stripe, but failed saving to database.",
         subscriptionId: subscription.id,
         dbSaved: false,
+        dbError: insertErr.message, // ⬅️ return actual error!
       });
     }
 

@@ -468,7 +468,9 @@ function StripePaymentForm({
               setMessage(data.error);
             } else if (data.dbSaved === false) {
               setMessage(
-                "❌ Subscription created in Stripe but NOT saved in the database."
+                `❌ Failed to save subscription: ${
+                  data.dbError || "Unknown error"
+                }`
               );
             } else if (data.subscriptionId && data.dbSaved === true) {
               onSubscriptionSuccess();
