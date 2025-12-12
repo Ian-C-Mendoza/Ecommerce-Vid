@@ -194,7 +194,7 @@ router.post("/create-subscription", async (req, res) => {
         next_billing,
         status: "active",
         stripe_subscription_id: subscription.id,
-        custom_details: customPackage ? JSON.stringify(customPackage) : null,
+        //  custom_details: customPackage ? JSON.stringify(customPackage) : null,
       },
     ]);
 
