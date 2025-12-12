@@ -111,7 +111,7 @@ router.post("/create-subscription", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // 1️⃣ Find or create customer
+    // 1️⃣ Find or create Stripe Customer
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customer = customers.data[0];
 
@@ -120,7 +120,7 @@ router.post("/create-subscription", async (req, res) => {
       console.log("➕ New customer created:", customer.id);
     }
 
-    // 2️⃣ If NO paymentMethod → create SetupIntent
+    // 2️⃣ No paymentMethod yet → return SetupIntent
     if (!paymentMethodId) {
       const setupIntent = await stripe.setupIntents.create({
         customer: customer.id,
@@ -130,19 +130,17 @@ router.post("/create-subscription", async (req, res) => {
       return res.json({ clientSecret: setupIntent.client_secret });
     }
 
-    // 3️⃣ Handle custom package price dynamically
+    // 3️⃣ Handle custom package
     let finalPriceId = priceId;
 
     if (customPackage) {
-      // Create a Stripe Product for this custom package
       const product = await stripe.products.create({
         name: `Custom Package for ${email}`,
       });
 
-      // Create a Stripe Price object (recurring monthly)
       const price = await stripe.prices.create({
         product: product.id,
-        unit_amount: Math.round(customPackage.price * 100), // in cents
+        unit_amount: Math.round(customPackage.price * 100),
         currency: "usd",
         recurring: { interval: "month" },
       });
@@ -150,7 +148,7 @@ router.post("/create-subscription", async (req, res) => {
       finalPriceId = price.id;
     }
 
-    // 4️⃣ Create subscription (existing flow)
+    // 4️⃣ Create Stripe subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: finalPriceId }],
@@ -160,14 +158,11 @@ router.post("/create-subscription", async (req, res) => {
 
     console.log("🎉 Subscription created:", subscription.id);
 
-    const latestInvoice = subscription.latest_invoice;
-    const paymentIntent = latestInvoice?.payment_intent;
-
-    // 5️⃣ Prepare subscription info for DB
     const subItem = subscription.items.data[0];
     const date_created = new Date(subItem.current_period_start * 1000);
     const next_billing = new Date(subItem.current_period_end * 1000);
 
+    // 5️⃣ Resolve plan name(s)
     const planNames = customPackage
       ? [`Custom Package: ${customPackage.title}`]
       : await Promise.all(
@@ -178,7 +173,7 @@ router.post("/create-subscription", async (req, res) => {
           })
         );
 
-    // 6️⃣ Fetch user ID from Supabase
+    // 6️⃣ Get user ID
     const { data: userData, error: userErr } = await supabase
       .from("users")
       .select("id")
@@ -186,11 +181,11 @@ router.post("/create-subscription", async (req, res) => {
       .single();
 
     if (userErr || !userData) {
-      console.error("❌ Supabase user lookup failed:", userErr);
+      console.error("❌ User lookup failed:", userErr);
       return res.status(400).json({ error: "User not found in DB" });
     }
 
-    // 7️⃣ Insert into subscriptions table
+    // 7️⃣ Insert subscription into DB
     const { error: insertErr } = await supabase.from("subscriptions").insert([
       {
         user_id: userData.id,
@@ -203,13 +198,24 @@ router.post("/create-subscription", async (req, res) => {
       },
     ]);
 
-    if (insertErr) console.error("❌ Supabase insert failed:", insertErr);
-    else console.log("🟢 Subscription saved in DB!");
+    // If DB insert failed → return explicit error
+    if (insertErr) {
+      console.error("❌ Supabase insert failed:", insertErr);
+      return res.status(500).json({
+        error: "Subscription created in Stripe, but failed saving to database.",
+        subscriptionId: subscription.id,
+        dbSaved: false,
+      });
+    }
 
-    // 8️⃣ Respond to frontend
+    console.log("🟢 Subscription saved in DB!");
+
+    // 8️⃣ Return success to frontend
     return res.json({
       subscriptionId: subscription.id,
-      clientSecret: paymentIntent?.client_secret || null,
+      clientSecret:
+        subscription?.latest_invoice?.payment_intent?.client_secret || null,
+      dbSaved: true,
     });
   } catch (err) {
     console.error("❌ Subscription Error:", err);

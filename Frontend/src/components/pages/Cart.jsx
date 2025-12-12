@@ -52,8 +52,13 @@ export function Cart({
   };
 
   const handleCheckout = () => {
-    // Pass full cart with plan info to backend / checkout
-    onCheckout(cartItems);
+    const cartWithPlan = cartItems.map((item) => ({
+      ...item,
+      plan: item.plan || "one-time", // fallback
+      customPackage: item.customPackage || null,
+    }));
+
+    onCheckout(cartWithPlan);
   };
 
   if (cartItems.length === 0) {

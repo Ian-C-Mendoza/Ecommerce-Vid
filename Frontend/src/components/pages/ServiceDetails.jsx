@@ -65,6 +65,11 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
       addons: selectedAddons,
       stripeMonthlyPriceId:
         selectedPlan === "monthly" ? service.stripeMonthlyPriceId : null,
+      // Include customPackage for custom subscription services
+      customPackage:
+        selectedPlan === "monthly" && service.customPackage
+          ? service.customPackage
+          : undefined,
     };
     onAddToCart(cartItem);
   };

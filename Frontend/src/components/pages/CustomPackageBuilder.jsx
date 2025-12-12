@@ -29,13 +29,14 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
     if (!videoCount || !duration) return;
 
     const customService = {
-      id: `custom-${Date.now()}`, // unique and backend can detect it's custom
+      id: `custom-${Date.now()}`, // unique ID
       key: "custom-package",
       title: "Custom Video Package",
       description:
         "A fully personalized package tailored to your content needs.",
-      duration: selectedDuration.label,
+      plan, // 'one-time' or 'monthly'
       price: totalPrice,
+      duration: selectedDuration.label,
       features: [
         `${videoCount} videos per ${plan === "monthly" ? "month" : "order"}`,
         `Video duration: ${selectedDuration.label}`,
@@ -65,8 +66,22 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
         "/elite/copy_43EEC12D-13C5-4A72-8B59-C3489EB1BD3C.mp4",
         "/elite/Vacation Introductory VO.mp4",
       ],
-      thumbnail: "/custom-package.png", // optional
-      stripeMonthlyPriceId: null, // you can integrate this later
+      thumbnail: "/custom-package.png",
+      addons: [],
+
+      // Stripe integration
+      stripeMonthlyPriceId: null, // optional
+
+      // Custom package details for backend & Stripe
+      customPackage: {
+        title: "Custom Video Package",
+        price: totalPrice,
+        duration: selectedDuration.label,
+        videoCount: Number(videoCount),
+        videos: [
+          // same video array as above (optional)
+        ],
+      },
     };
 
     onSelectService(customService);

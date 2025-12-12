@@ -97,21 +97,33 @@ export function Checkout({
 
       setLoadingClientSecret(true);
       try {
-        const route =
-          selectedService.plan === "monthly"
-            ? "create-subscription"
-            : "create-payment-intent";
+        let route = "";
+        const body = { email: user.email };
 
-        const body =
-          selectedService.plan === "monthly"
-            ? {
-                email: user.email,
-                priceId: selectedService.stripeMonthlyPriceId,
-              }
-            : {
-                amount: total * 100,
-                email: user.email,
-              };
+        if (selectedService.plan === "monthly") {
+          route = "create-subscription";
+
+          // Only add fields if they exist
+          if (selectedService.stripeMonthlyPriceId) {
+            body.priceId = selectedService.stripeMonthlyPriceId; // regular plan
+          } else if (selectedService.customPackage) {
+            body.customPackage = selectedService.customPackage; // custom plan
+          } else {
+            throw new Error(
+              "No priceId or customPackage provided for subscription"
+            );
+          }
+        } else {
+          route = "create-payment-intent";
+
+          if (selectedService.customPackage) {
+            body.amount = selectedService.customPackage.price * 100; // in cents
+          } else if (total) {
+            body.amount = total * 100; // regular one-time package
+          } else {
+            throw new Error("Amount not provided for one-time payment");
+          }
+        }
 
         const res = await fetch(`${BACKEND_URL}/api/payment/${route}`, {
           method: "POST",
@@ -120,7 +132,6 @@ export function Checkout({
         });
 
         const data = await res.json();
-
         if (data.error) throw new Error(data.error);
 
         setClientSecret(data.clientSecret);
@@ -430,37 +441,46 @@ function StripePaymentForm({
         if (error) {
           setMessage(error.message);
         } else {
-          console.log("✅ SetupIntent confirmed:", setupIntent.id);
+          const body = {
+            email: userEmail,
+            paymentMethodId: setupIntent.payment_method,
+          };
 
-          // Send payment method to backend to create Stripe subscription
-          const res = await fetch(
-            `${BACKEND_URL}/api/payment/create-subscription`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: userEmail,
-                priceId: selectedService.stripeMonthlyPriceId,
-                paymentMethodId: setupIntent.payment_method,
-              }),
+          if (selectedService.stripeMonthlyPriceId) {
+            body.priceId = selectedService.stripeMonthlyPriceId; // standard plan
+          } else if (selectedService.customPackage) {
+            body.customPackage = selectedService.customPackage; // custom plan
+          }
+
+          try {
+            const res = await fetch(
+              `${BACKEND_URL}/api/payment/create-subscription`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+              }
+            );
+
+            const data = await res.json();
+
+            if (data.error) {
+              setMessage(data.error);
+            } else if (data.dbSaved === false) {
+              setMessage(
+                "❌ Subscription created in Stripe but NOT saved in the database."
+              );
+            } else if (data.subscriptionId && data.dbSaved === true) {
+              onSubscriptionSuccess();
             }
-          );
-
-          const data = await res.json();
-
-          if (data.error) {
-            setMessage(data.error);
-          } else {
-            console.log("🎉 Subscription created:", data.subscriptionId);
-
-            // ⭐ IMPORTANT ⭐
-            // Monthly subscriptions should NOT create an order
-            onSubscriptionSuccess();
+          } catch (err) {
+            console.error("Subscription DB save error:", err);
+            setMessage("❌ Failed to save subscription in the database.");
           }
         }
 
         setLoading(false);
-        return; // stop here to avoid running one-time logic
+        return;
       }
 
       // ============================
