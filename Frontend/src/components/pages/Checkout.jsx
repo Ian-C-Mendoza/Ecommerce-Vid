@@ -265,10 +265,7 @@ export function Checkout({
             {/* Auth Step */}
             {step === "auth" && (
               <div className="flex justify-center mt-6">
-                <ClientAuth
-                  onSuccess={handleAuthSuccess}
-                  className="space-y-4" // spacing between form elements
-                />
+                <ClientAuth onSuccess={handleAuthSuccess} />
               </div>
             )}
 
