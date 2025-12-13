@@ -25,35 +25,42 @@ export function MediaCarousel({ items = [] }) {
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap());
 
-    const onSelect = () => {
-      const selected = api.selectedScrollSnap();
-      setCurrent(selected);
-
+    const playVideoAt = (index) => {
       const videos = document.querySelectorAll("video");
-      videos.forEach((video) => video.pause());
+      videos.forEach((video, i) => {
+        if (i !== index) video.pause();
+      });
 
-      const currentVideo = document.getElementById(`video-${selected}`);
-      if (currentVideo) {
-        currentVideo.play();
-        setIsPlaying({ [selected]: true });
-        currentVideo.muted = true;
-        setIsMuted({ [selected]: true });
+      const video = document.getElementById(`video-${index}`);
+      if (video) {
+        video.muted = true;
+        video.play();
+        setIsPlaying({ [index]: true });
+        setIsMuted({ [index]: true });
+
+        video.onended = () => {
+          let nextIndex = index + 1;
+          if (nextIndex >= count) nextIndex = 0;
+          api.scrollTo(nextIndex);
+        };
       }
     };
 
-    api.on("select", onSelect);
-    onSelect();
+    const handleSelect = () => {
+      const selected = api.selectedScrollSnap();
+      setCurrent(selected);
+      playVideoAt(selected);
+    };
 
-    const interval = setInterval(() => {
-      if (api.canScrollNext()) {
-        api.scrollNext();
-      } else {
-        api.scrollTo(0);
-      }
-    }, 5000);
+    api.on("select", handleSelect);
+    handleSelect();
 
-    return () => clearInterval(interval);
-  }, [api]);
+    return () => {
+      api.off("select", handleSelect);
+      const videos = document.querySelectorAll("video");
+      videos.forEach((video) => (video.onended = null));
+    };
+  }, [api, count]);
 
   const togglePlay = (index) => {
     const video = document.getElementById(`video-${index}`);

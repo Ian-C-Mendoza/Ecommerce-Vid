@@ -264,12 +264,11 @@ export function Checkout({
           <CardContent className="space-y-8">
             {/* Auth Step */}
             {step === "auth" && (
-              <div className="bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 text-center px-4 py-3 rounded-md shadow-md mb-6">
-                <h6 className="text-sm font-semibold">
-                  👋 Welcome! Please login or register to continue
-                </h6>
-
-                <ClientAuth onSuccess={handleAuthSuccess} />
+              <div className="flex justify-center mt-6">
+                <ClientAuth
+                  onSuccess={handleAuthSuccess}
+                  className="space-y-4" // spacing between form elements
+                />
               </div>
             )}
 
