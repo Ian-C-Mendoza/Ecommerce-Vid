@@ -32,7 +32,7 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
     const numVideos = match ? match[0] : "";
 
     if (plan === "one-time") {
-      return `Perfect if you need a single batch of ${numVideos} edited videos (up to 1 minute each).`;
+      return `Perfect if you need a single batch of ${numVideos} edited videos .`;
     }
     if (plan === "monthly") {
       return `Ideal for creators who want fresh videos. You'll receive ${numVideos} videos every month, spaced out weekly so you always have fresh content.`;

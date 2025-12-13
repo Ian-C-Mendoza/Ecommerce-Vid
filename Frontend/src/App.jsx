@@ -239,8 +239,8 @@ export default function App() {
                   <p className="max-w-3xl mx-auto text-lg lg:text-xl text-muted-foreground leading-relaxed mb-12">
                     WeEdit Co empowers brands with polished, professional video
                     content that enhances visibility and keeps your online
-                    presence active and compelling so they can focus on what
-                    matters most in their business. Backed by a skilled team of
+                    presence active and compelling so you can focus on what
+                    matters most in your business. Backed by a skilled team of
                     editors, we deliver consistent, high-quality results that
                     support your marketing and business growth.
                   </p>

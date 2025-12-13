@@ -19,11 +19,11 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
   const MIN_VIDEOS = 16;
 
   const durationOptions = [
-    { label: "30 sec – 1 min", price: 55, icon: "⚡" },
-    { label: "1 min – 1:30", price: 60, icon: "🎯" },
-    { label: "1 min – 2 min", price: 70, icon: "🎬" },
-    { label: "2 min – 3 min", price: 85, icon: "🎥" },
-    { label: "3 min – 5 min", price: 110, icon: "🎪" },
+    { label: "30 sec – 1 min", price: 55, icon: "" },
+    { label: "1 min – 1:30", price: 60, icon: "" },
+    { label: "1 min – 2 min", price: 70, icon: "" },
+    { label: "2 min – 3 min", price: 85, icon: "" },
+    { label: "3 min – 5 min", price: 110, icon: "" },
   ];
 
   const selectedDuration = durationOptions.find((d) => d.label === duration);

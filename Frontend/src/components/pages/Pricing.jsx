@@ -64,7 +64,7 @@ export function Pricing({ onSelectService, onOpenCustomBuilder }) {
                       ${service.price}
                     </span>
                     <span className="text-muted-foreground text-xs sm:text-sm">
-                      / Package
+                      / Package or Monthly subscription
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
