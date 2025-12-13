@@ -7,7 +7,7 @@ export function SubscriptionCancel({ subId, onCancel }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const BACKEND_URL = "https://weedit-co.onrender.com";
+  const BACKEND_URL = "https://we-edit-co.onrender.com";
 
   const handleConfirmCancel = async () => {
     setLoading(true);

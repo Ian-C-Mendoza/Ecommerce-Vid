@@ -113,14 +113,6 @@ export function Cart({
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <div className="relative w-24 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                        <ImageWithFallback
-                          src={item.service.thumbnail}
-                          alt={item.service.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
                       <div className="flex-1 space-y-3">
                         <div className="flex items-start justify-between">
                           <div>
@@ -254,31 +246,6 @@ export function Cart({
                   <span className="bg-gradient-primary bg-clip-text text-transparent">
                     ${total}
                   </span>
-                </div>
-
-                {/* Promo Code */}
-                <div className="space-y-2">
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Promo code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      disabled={isPromoApplied}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={handlePromoCode}
-                      disabled={isPromoApplied}
-                      className="btn-hover-secondary"
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                  {isPromoApplied && (
-                    <p className="text-sm text-green-600">
-                      Promo code applied successfully!
-                    </p>
-                  )}
                 </div>
 
                 <Button

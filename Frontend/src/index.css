@@ -7005,7 +7005,7 @@
   --muted-foreground: #6b6b7a;
   --border: #5b2c8720;
   --input: transparent;
-  --input-background: #c7afafb8; /* a touch lighter */
+  --input-background: #b9e0e6b8; /* a touch lighter */
 
   /* Brand & accents (unchanged) */
   --primary: linear-gradient(135deg, #5b2c87 0%, #ffffff 100%);
@@ -7642,4 +7642,19 @@ html {
   .glass-card {
     background: rgba(255, 255, 255, 0.12);
   }
+}
+@keyframes pulseSoft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulseSoft 3s ease-in-out infinite;
 }

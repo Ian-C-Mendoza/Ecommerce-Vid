@@ -90,7 +90,7 @@ export function OrderHistory({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("orders");
 
-  const BACKEND_URL = "https://weedit-co.onrender.com";
+  const BACKEND_URL = "https://we-edit-co.onrender.com";
 
   useEffect(() => {
     async function fetchHistory() {

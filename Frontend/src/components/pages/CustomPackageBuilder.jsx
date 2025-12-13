@@ -16,6 +16,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
   const [videoCount, setVideoCount] = useState("");
   const [duration, setDuration] = useState("");
   const [plan, setPlan] = useState("one-time");
+  const MIN_VIDEOS = 16;
 
   const durationOptions = [
     { label: "30 sec – 1 min", price: 55, icon: "⚡" },
@@ -144,16 +145,36 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                 >
                   Video Count
                 </Label>
+
                 <Input
                   id="video-count"
                   type="number"
                   value={videoCount}
-                  min="1"
-                  onChange={(e) => setVideoCount(e.target.value)}
-                  placeholder="Enter number of videos"
+                  min={MIN_VIDEOS}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+
+                    if (Number.isNaN(value)) {
+                      setVideoCount("");
+                      return;
+                    }
+
+                    setVideoCount(value);
+                  }}
+                  placeholder="Minimum of 16 videos"
                   className="h-12 text-lg border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder-gray-400 focus:ring-2 focus:ring-primary/50"
                 />
-                {videoCount && (
+
+                {/* Validation message */}
+                {videoCount !== "" && videoCount < MIN_VIDEOS && (
+                  <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-2">
+                    <span>⚠️</span>
+                    Minimum of {MIN_VIDEOS} videos or Higher is required.
+                  </p>
+                )}
+
+                {/* Success message */}
+                {videoCount >= MIN_VIDEOS && (
                   <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1 mt-2">
                     <CheckCircle2 className="w-4 h-4" />
                     {videoCount} videos selected
@@ -292,7 +313,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                     className="w-full h-12 bg-gradient-primary hover:from-blue-700 btn-hover-primary text-white shadow-lg"
                     size="lg"
                     onClick={handleContinue}
-                    disabled={!videoCount || !duration}
+                    disabled={!duration || Number(videoCount) < 16}
                   >
                     Continue to Review
                     <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />

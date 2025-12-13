@@ -26,7 +26,7 @@ export default function ClientAuth({ onSuccess }) {
   });
 
   //const BACKEND_URL = "http://localhost:5000";
-  const BACKEND_URL = "https://weedit-co.onrender.com";
+  const BACKEND_URL = "https://we-edit-co.onrender.com";
 
   const handleLogin = async (e) => {
     e.preventDefault();

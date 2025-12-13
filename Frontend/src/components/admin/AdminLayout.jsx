@@ -64,12 +64,6 @@ const sidebarItems = [
     id: "inbox",
     description: "User messages and inquiries",
   },
-  {
-    title: "Testimonials",
-    icon: Star,
-    id: "testimonials",
-    description: "Customer feedback",
-  },
 ];
 
 export function AdminLayout({
@@ -92,7 +86,7 @@ export function AdminLayout({
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   //const BACKEND_URL = "http://localhost:5000";
-  const BACKEND_URL = "https://weedit-co.onrender.com";
+  const BACKEND_URL = "https://we-edit-co.onrender.com";
 
   // ✅ Fetch user (Supabase first → fallback API)
   useEffect(() => {

@@ -209,48 +209,97 @@ export default function App() {
 
       case "about":
         return (
-          <div className="py-20">
+          <div className="py-28">
             <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center space-y-8">
-                <h1 className="text-4xl lg:text-5xl">About WeEdit Co</h1>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  “WeEdit Co empowers brands with polished, professional video
-                  content that enhances visibility and keeps your online
-                  presence active and compelling so they can focus on what
-                  matters most in their business. Backed by a skilled team of
-                  editors, we deliver consistent, high-quality results that
-                  support your marketing and business growth.”
-                </p>
-                <div className="grid md:grid-cols-3 gap-8 mt-12">
-                  <div className="space-y-4">
-                    <div className="text-3xl font-bold text-primary">5+</div>
-                    <div className="text-lg font-medium">
-                      Experienced Creative Team
-                    </div>
-                    <p className="text-muted-foreground">
-                      Years of proven editing expertise across various
-                      industries and content styles.
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="text-3xl font-bold text-primary">500+</div>
-                    <div className="text-lg font-medium">
-                      Trusted by Growing Businesses
-                    </div>
-                    <p className="text-muted-foreground">
-                      Brands and entrepreneurs rely on us for consistent,
-                      highquality video content.
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="text-3xl font-bold text-primary">98%</div>
-                    <div className="text-lg font-medium">
-                      Client Satisfaction
-                    </div>
-                    <p className="text-muted-foreground">
-                      Our dedication to quality and smooth communication keeps
-                      clients coming back.
-                    </p>
+              {/* Glass Container */}
+              <div
+                className="
+        max-w-6xl mx-auto
+        rounded-2xl
+        bg-white/60 dark:bg-gray-900/60
+        backdrop-blur-xl
+        border border-white/20 dark:border-white/10
+        shadow-lg
+        px-8 sm:px-12 lg:px-16
+        py-16
+            mt-12 mb-12
+
+      "
+              >
+                <div className="max-w-4xl mx-auto text-center space-y-14">
+                  {/* Heading */}
+                  <h1 className="text-4xl lg:text-5xl text-muted-foreground font-bold">
+                    About{" "}
+                    <span className="bg-gradient-primary bg-clip-text text-transparent animate-pulse-hard">
+                      WeEdit Co
+                    </span>
+                  </h1>
+
+                  {/* Description */}
+                  <p className="max-w-3xl mx-auto text-lg lg:text-xl text-muted-foreground leading-relaxed mb-12">
+                    WeEdit Co empowers brands with polished, professional video
+                    content that enhances visibility and keeps your online
+                    presence active and compelling so they can focus on what
+                    matters most in their business. Backed by a skilled team of
+                    editors, we deliver consistent, high-quality results that
+                    support your marketing and business growth.
+                  </p>
+
+                  {/* Feature Grid */}
+                  <div className="grid gap-12 md:grid-cols-3 mt-20 animate-pulse-hard">
+                    {[
+                      {
+                        title: "Experienced Creative Team",
+                        desc: "Years of proven editing expertise across various industries and content styles.",
+                      },
+                      {
+                        title: "Trusted by Growing Businesses",
+                        desc: "Brands and entrepreneurs rely on us for consistent, high-quality video content.",
+                      },
+                      {
+                        title: "Client Satisfaction",
+                        desc: "Our dedication to quality and smooth communication keeps clients coming back.",
+                      },
+                    ].map((item, i) => (
+                      <div key={i} className="relative group">
+                        {/* Soft Gradient Border */}
+                        <div
+                          className="
+                  absolute -inset-0.5 rounded-2xl
+                  bg-gradient-primary
+                  opacity-20
+                  blur-lg
+                  group-hover:opacity-30
+                  transition-opacity duration-500
+                "
+                        />
+
+                        {/* Card */}
+                        <div
+                          className="
+                  relative h-full
+                  rounded-2xl
+                  bg-white/70 dark:bg-gray-900/70
+                  backdrop-blur-lg
+                  border border-white/40 dark:border-white/10
+                  px-8 py-10
+                  text-center
+                  shadow-sm
+                  hover:shadow-xl
+                  hover:-translate-y-1
+                  transition-all duration-300
+                "
+                        >
+                          <h3 className="text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
+                            {item.title}
+                          </h3>
+
+                          <p className="mt-4 text-muted-foreground leading-relaxed">
+                            {item.desc}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

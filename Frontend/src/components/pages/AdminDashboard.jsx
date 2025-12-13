@@ -281,7 +281,7 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false);
 
   //const BACKEND_URL = "http://localhost:5000";
-  const BACKEND_URL = "https://weedit-co.onrender.com";
+  const BACKEND_URL = "https://we-edit-co.onrender.com";
 
   useEffect(() => {
     async function fetchOrders() {

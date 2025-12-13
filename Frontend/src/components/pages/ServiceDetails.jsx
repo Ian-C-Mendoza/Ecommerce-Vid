@@ -212,41 +212,6 @@ export function ServiceDetails({ service, onBack, onAddToCart }) {
 
         {/* ---------------- Optional Add-ons Section ---------------- */}
         <div className="mt-12 flex flex-col gap-4">
-          <Card className="border border-white/20 bg-white/50 dark:bg-black/50 backdrop-blur-sm mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Plus className="w-5 h-5 text-primary" />
-                <span>Optional Add-ons</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {addons.slice(0, 6).map((addon) => (
-                  <div
-                    key={addon.name}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg border border-white/10 hover:bg-surface-elevated transition-colors"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={selectedAddons.includes(addon.name)}
-                        onCheckedChange={() => handleAddonToggle(addon.name)}
-                      />
-                      <div>
-                        <p className="font-medium">{addon.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {addon.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right mt-2 sm:mt-0">
-                      <p className="font-medium">+${addon.price}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Pricing Summary */}
           <Card className="border-2 border-primary/20 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 mt-6">
             <CardContent className="p-6 flex flex-col gap-4">
