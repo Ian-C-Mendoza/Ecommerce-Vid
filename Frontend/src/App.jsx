@@ -14,6 +14,8 @@ import { AdminWrapper } from "./components/admin/AdminWrapper";
 import { Footer } from "./components/common/Footer";
 import { Toaster } from "sonner";
 import { addons } from "./data/mockData"; // ✅ addon price lookup
+// App.jsx
+import { CustomPackageBuilder } from "./components/pages/CustomPackageBuilder";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -118,6 +120,17 @@ export default function App() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case "custom-package":
+        return (
+          <CustomPackageBuilder
+            onBack={() => setCurrentPage("home")}
+            onSelectService={(service) => {
+              setSelectedService(service);
+              setCurrentPage("service-details");
+            }}
+          />
+        );
+
       case "service-details":
         return selectedService ? (
           <ServiceDetails
@@ -253,7 +266,10 @@ export default function App() {
             </section>
 
             <section id="services" className="scroll-mt-20">
-              <Pricing onSelectService={handleSelectService} />
+              <Pricing
+                onSelectService={handleSelectService}
+                onOpenCustomBuilder={() => setCurrentPage("custom-package")}
+              />
             </section>
 
             <section id="contact" className="scroll-mt-20">

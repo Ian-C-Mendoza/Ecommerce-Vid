@@ -26,6 +26,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
   ];
 
   const selectedDuration = durationOptions.find((d) => d.label === duration);
+
   const totalPrice =
     videoCount && selectedDuration
       ? Number(videoCount) * selectedDuration.price
@@ -86,11 +87,11 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
   };
 
   return (
-    <div className="relative min-h-screen bg-transparent dark:bg-gray-900">
+    <div className="relative min-h-screen bg-transparent">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[#FAF7F0] dark:hidden" />
-        <div className="absolute inset-0 hidden dark:block bg-gray-900" />
+        <div className="absolute inset-0 hidden dark:block bg-gradient-to-br from-blue-950/10 via-transparent to-purple-950/10" />
       </div>
 
       <div className="container mx-auto px-4 py-8 max-w-3xl relative z-10">
@@ -104,9 +105,9 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Services
           </Button>
-          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:bg-gradient-to-r dark:from-purple-700/20 dark:to-blue-700/20 rounded-full border border-gray-300 dark:border-gray-600">
-            <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-300" />
-            <span className="text-sm text-gray-800 dark:text-gray-200">
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:bg-gradient-to-r dark:from-purple-500/10 dark:to-blue-500/10 rounded-full border border-gray-300 dark:border-purple-500/20">
+            <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-sm text-gray-800 dark:text-purple-300">
               Custom Package Builder
             </span>
           </div>
@@ -122,7 +123,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
         {/* Steps */}
         <div className="space-y-6">
           {/* Video Count */}
-          <Card className="border border-gray-300/50 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-xl shadow-lg">
+          <Card className="border border-gray-300/50 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-xl shadow-lg">
             <CardHeader className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white">
                 <Video className="w-5 h-5" />
@@ -151,7 +152,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                   min="1"
                   onChange={(e) => setVideoCount(e.target.value)}
                   placeholder="Enter number of videos"
-                  className="h-12 text-lg border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder-gray-400 focus:ring-2 focus:ring-primary/50"
+                  className="h-12 text-lg border border-gray-300 dark:border-white/20 rounded-md bg-white dark:bg-white/5 text-foreground dark:text-white placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
                 />
                 {videoCount && (
                   <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1 mt-2">
@@ -164,7 +165,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
           </Card>
 
           {/* Duration */}
-          <Card className="border border-gray-300/50 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-xl shadow-lg">
+          <Card className="border border-gray-300/50 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-xl shadow-lg">
             <CardHeader className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white">
                 <Clock className="w-5 h-5" />
@@ -186,8 +187,8 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                     onClick={() => setDuration(option.label)}
                     className={`p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
                       duration === option.label
-                        ? "border-blue-500 bg-blue-50 dark:bg-gray-700 text-foreground dark:text-white shadow-md"
-                        : "border-gray-300/50 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md text-foreground dark:text-white"
+                        ? "border-blue-500 bg-blue-50 dark:bg-white/10 text-foreground dark:text-white shadow-md"
+                        : "border-gray-300/50 dark:border-white/10 bg-white dark:bg-white/5 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md text-foreground dark:text-white"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -201,7 +202,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                         </div>
                       </div>
                       {duration === option.label && (
-                        <CheckCircle2 className="w-6 h-6 text-blue-500 dark:text-blue-300" />
+                        <CheckCircle2 className="w-6 h-6 text-blue-500" />
                       )}
                     </div>
                   </button>
@@ -211,10 +212,10 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
           </Card>
 
           {/* Summary */}
-          <Card className="border border-gray-300/50 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-xl shadow-lg overflow-hidden">
+          <Card className="border border-gray-300/50 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-xl shadow-lg overflow-hidden">
             <CardHeader className="relative">
               <CardTitle className="text-xl flex items-center gap-2 text-foreground dark:text-white">
-                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+                <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 Package Summary
               </CardTitle>
             </CardHeader>
@@ -232,8 +233,8 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                 <>
                   <div className="space-y-4">
                     {videoCount && (
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-white/10 dark:bg-gray-700 shadow-sm border border-gray-300/50 dark:border-gray-600">
-                        <Video className="w-5 h-5 text-blue-600 dark:text-blue-300 mt-0.5" />
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-white/10 dark:bg-white/5 shadow-sm border border-gray-300/50 dark:border-white/10">
+                        <Video className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                         <div className="flex-1 text-foreground dark:text-white">
                           <p className="text-sm text-muted-foreground dark:text-gray-300">
                             Videos
@@ -246,8 +247,8 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                       </div>
                     )}
                     {duration && (
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-white/10 dark:bg-gray-700 shadow-sm border border-gray-300/50 dark:border-gray-600">
-                        <Clock className="w-5 h-5 text-purple-600 dark:text-purple-300 mt-0.5" />
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-white/10 dark:bg-white/5 shadow-sm border border-gray-300/50 dark:border-white/10">
+                        <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
                         <div className="flex-1 text-foreground dark:text-white">
                           <p className="text-sm text-muted-foreground dark:text-gray-300">
                             Duration
@@ -262,7 +263,7 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                   </div>
 
                   {/* Total Price */}
-                  <div className="pt-4 border-t border-gray-300/50 dark:border-gray-600">
+                  <div className="pt-4 border-t border-gray-300/50 dark:border-white/10">
                     <div className="space-y-2 mb-4 flex justify-between text-sm text-foreground dark:text-white">
                       <span className="text-muted-foreground dark:text-gray-300">
                         Calculation
@@ -272,8 +273,8 @@ export function CustomPackageBuilder({ onBack, onSelectService }) {
                       </span>
                     </div>
 
-                    {/* Total Price Card */}
-                    <div className="p-4 rounded-xl shadow-md bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-700 dark:to-purple-700 text-foreground dark:text-white">
+                    {/* Updated total price card */}
+                    <div className="p-4 rounded-xl shadow-md bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-600 dark:to-purple-600 text-foreground dark:text-white">
                       <p className="text-sm opacity-90 mb-1">
                         {plan === "monthly" ? "Monthly Total" : "Total Price"}
                       </p>

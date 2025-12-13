@@ -10,6 +10,7 @@ import {
   ShoppingBag,
   RefreshCw,
 } from "lucide-react";
+import { SubscriptionCancel } from "../modals/SubscriptionCancel";
 
 // --- UI Components ---
 
@@ -23,37 +24,25 @@ const Button = ({
     "inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1";
 
   const variants = {
-    primary: {
-      backgroundColor: "var(--primary-solid)",
-      color: "var(--primary-foreground)",
-    },
-    destructive: {
-      backgroundColor: "var(--destructive)",
-      color: "var(--destructive-foreground)",
-    },
-    outline: {
-      backgroundColor: "var(--background)",
-      color: "var(--foreground)",
-      border: "1px solid var(--border)",
-    },
-    ghost: { backgroundColor: "transparent", color: "var(--foreground)" },
+    primary: "bg-primary text-primary-foreground",
+    destructive: "bg-destructive text-destructive-foreground",
+    outline: "bg-background text-foreground border border-border",
+    ghost: "bg-transparent text-foreground",
   };
 
   return (
     <button
-      className={baseStyle + " " + className}
-      style={variants[variant]}
+      className={`${baseStyle} ${variants[variant]} ${className}`}
       {...props}
     >
       {children}
     </button>
   );
 };
-
 const Badge = ({ status }) => {
   const colorMap = {
-    Completed: ["var(--accent)", "var(--accent-foreground)", "var(--border)"],
-    active: ["var(--accent)", "var(--accent-foreground)", "var(--border)"],
+    Completed: ["#22c55e", "#ffffff", "var(--border)"], // green
+    active: ["#22c55e", "#ffffff", "var(--border)"], // green
     "In Progress": [
       "var(--primary)",
       "var(--primary-foreground)",
@@ -78,9 +67,13 @@ const Badge = ({ status }) => {
   if (status === "Completed" || status === "active") Icon = CheckCircle;
   if (status === "Cancelled") Icon = XCircle;
 
+  // Add pulsing animation for green badges
+  const pulseClass =
+    status === "Completed" || status === "active" ? "animate-pulse" : "";
+
   return (
     <span
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${pulseClass}`}
       style={{ backgroundColor: bg, color: fg, borderColor: border }}
     >
       <Icon size={12} />
@@ -97,7 +90,6 @@ export function OrderHistory({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("orders");
 
-  //const BACKEND_URL = "http://localhost:5000";
   const BACKEND_URL = "https://weedit-co.onrender.com";
 
   useEffect(() => {
@@ -221,13 +213,7 @@ export function OrderHistory({ onBack }) {
 
   if (loading) {
     return (
-      <div
-        style={{
-          backgroundColor: "var(--background)",
-          color: "var(--foreground)",
-        }}
-        className="min-h-[400px] flex flex-col items-center justify-center space-y-4"
-      >
+      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-4 bg-background dark:bg-gray-900 text-foreground dark:text-white">
         <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
         <p className="font-medium">Loading your history...</p>
       </div>
@@ -235,74 +221,68 @@ export function OrderHistory({ onBack }) {
   }
 
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(15,15,15,0.7)",
-        backdropFilter: "blur(20px)",
-        color: "var(--foreground)",
-      }}
-      className="min-h-screen p-4 md:p-8 font-sans"
-    >
+    <div className="min-h-screen p-4 md:p-8 bg-[#D8D2C2] dark:bg-[#0F0F0F]/70text-foreground dark:text-white font-sans">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <button
               onClick={onBack}
-              style={{ color: "var(--foreground)" }}
               className="flex items-center text-sm hover:opacity-80 transition mb-2"
             >
               <ChevronLeft size={16} className="mr-1" /> Back
             </button>
-            <h1
-              style={{ color: "var(--foreground)" }}
-              className="text-3xl font-bold tracking-tight"
-            >
-              Order History
-            </h1>
-            <p style={{ color: "var(--foreground)" }} className="mt-1">
+            <h1 className="text-3xl font-bold tracking-tight">Order History</h1>
+            <p className="mt-1 text-muted-foreground dark:text-gray-300">
               View your past purchases and subscriptions.
             </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex space-x-1 p-1 rounded-xl w-fit mb-8">
-          {["orders", "subscriptions"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                backgroundColor:
-                  activeTab === tab ? "var(--card)" : "var(--background)",
-                color:
-                  activeTab === tab
-                    ? "var(--primary-foreground)"
-                    : "var(--foreground)",
-              }}
-              className="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+        <div className="flex space-x-2 p-1 rounded-xl bg-muted/30 dark:bg-gray-800/40 backdrop-blur-md border border-gray-200/40 dark:border-gray-700/40 mb-8 w-fit">
+          {["orders", "subscriptions"].map((tab) => {
+            const active = activeTab === tab;
+            const isSub = tab === "subscriptions";
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`
+          px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 border relative
+          ${
+            active
+              ? `
+                scale-[1.05]
+                text-white
+                ${
+                  isSub
+                    ? "bg-blue-600 dark:bg-blue-500"
+                    : "bg-blue-600 dark:bg-blue-500"
+                }
+                shadow-md
+              `
+              : `
+                bg-transparent
+                text-gray-700 dark:text-gray-300
+                hover:bg-white/10 dark:hover:bg-gray-900/40
+              `
+          }
+        `}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content */}
         <div className="space-y-6">
           {/* Orders Empty */}
           {activeTab === "orders" && orders.length === 0 && (
-            <div
-              style={{
-                backgroundColor: "var(--card)",
-                color: "var(--card-foreground)",
-                borderColor: "var(--border)",
-              }}
-              className="text-center py-20 rounded-2xl border border-dashed"
-            >
-              <div
-                style={{ backgroundColor: "var(--surface-elevated)" }}
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
+            <div className="text-center py-20 rounded-2xl border border-dashed border-border bg-card dark:bg-gray-800">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-surface-elevated dark:bg-gray-700">
                 <ShoppingBag size={28} />
               </div>
               <h3 className="text-lg font-semibold">No orders yet</h3>
@@ -315,97 +295,118 @@ export function OrderHistory({ onBack }) {
 
           {/* Orders List */}
           {activeTab === "orders" &&
-            orders.map((order) => (
-              <div
-                key={order.id}
-                style={{
-                  backgroundColor: "var(--card)",
-                  color: "var(--card-foreground)",
-                  borderColor: "var(--border)",
-                }}
-                className="rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 border"
-              >
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 mb-4 gap-4">
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="font-bold text-lg">
-                        Order #{order.id}
-                      </span>
-                      <Badge status={order.status} />
-                    </div>
-                    <span className="text-sm flex items-center gap-1">
-                      <Calendar size={14} /> {formatDate(order.created_at)}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm">Total Amount</p>
-                    <p className="font-bold text-xl">
-                      {formatCurrency(order.total)}
-                    </p>
-                  </div>
-                </div>
+            orders.map((order) => {
+              // Determine highlight color based on status
+              let highlightColor;
+              switch (order.status.toLowerCase()) {
+                case "completed":
+                case "paid":
+                  highlightColor = "rgba(34,197,94,0.3)"; // green
+                  break;
+                case "pending":
+                case "processing":
+                  highlightColor = "rgba(250, 204, 21, 0.84)"; // yellow
+                  break;
+                case "failed":
+                case "cancelled":
+                  highlightColor = "rgba(239,68,68,0.3)"; // red
+                  break;
+                default:
+                  highlightColor = "rgba(255, 255, 255, 0.95)"; // neutral
+              }
 
-                {/* Items */}
-                <div className="space-y-3">
-                  {order.order_items.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center py-2 group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          style={{
-                            backgroundColor: "var(--surface-elevated)",
-                            color: "var(--foreground)",
-                          }}
-                          className="w-10 h-10 rounded-lg flex items-center justify-center"
-                        >
-                          <Package size={20} />
-                        </div>
-                        <div>
-                          <p>{item.title}</p>
-                          <p className="text-xs">Qty: {item.quantity}</p>
-                        </div>
+              return (
+                <div
+                  key={order.id}
+                  className={`
+          rounded-2xl p-6 border border-gray-200/50 bg-white/70 backdrop-blur-md
+          shadow-lg hover:shadow-2xl transition-all duration-300
+          dark:border-gray-700/50 dark:bg-gray-800/70
+        `}
+                  style={{
+                    // Dark mode highlight
+                    ...(typeof window !== "undefined" &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                      ? { boxShadow: `0 0 20px ${highlightColor}` }
+                      : {}),
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-300/30 dark:border-gray-600/30 pb-4 mb-4 gap-4">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="font-bold text-lg text-foreground dark:text-white">
+                          Order #{order.id}
+                        </span>
+                        <Badge status={order.status} />
                       </div>
-                      <span>{formatCurrency(item.price * item.quantity)}</span>
+                      <span className="text-sm text-muted-foreground dark:text-gray-300 flex items-center gap-1">
+                        <Calendar size={14} /> {formatDate(order.created_at)}
+                      </span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Footer */}
-                <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm gap-3">
-                  <div className="flex items-center gap-2">
-                    <CreditCard size={16} />
-                    <span>
-                      {order.payment_method} <span className="mx-1">•</span>{" "}
-                      {order.payment_status}
-                    </span>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground dark:text-gray-300">
+                        Total Amount
+                      </p>
+                      <p className="font-bold text-xl text-foreground dark:text-white">
+                        {formatCurrency(order.total)}
+                      </p>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto text-xs h-9"
-                  >
-                    View Invoice
-                  </Button>
+
+                  {/* Items */}
+                  <div className="space-y-3">
+                    {order.order_items.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center py-2 px-3 rounded-lg 
+                bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm 
+                shadow-sm border border-gray-200/30 dark:border-gray-700/30"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 rounded-lg flex items-center justify-center 
+                  bg-white/40 dark:bg-gray-700/40 backdrop-blur-sm shadow"
+                          >
+                            <Package
+                              size={20}
+                              className="text-foreground dark:text-white"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-foreground dark:text-white">
+                              {item.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground dark:text-gray-300">
+                              Qty: {item.quantity}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-foreground dark:text-white">
+                          {formatCurrency(item.price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mt-6 pt-4 border-t border-gray-300/30 dark:border-gray-600/30 flex flex-col sm:flex-row justify-between items-start sm:items-center text-sm gap-3">
+                    <div className="flex items-center gap-2 text-foreground dark:text-white">
+                      <CreditCard size={16} />
+                      <span>
+                        {order.payment_method} <span className="mx-1">•</span>{" "}
+                        {order.payment_status}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
           {/* Subscriptions Empty */}
           {activeTab === "subscriptions" && subscriptions.length === 0 && (
-            <div
-              style={{
-                backgroundColor: "var(--card)",
-                color: "var(--card-foreground)",
-                borderColor: "var(--border)",
-              }}
-              className="text-center py-20 rounded-2xl border border-dashed"
-            >
-              <div
-                style={{ backgroundColor: "var(--surface-elevated)" }}
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              >
+            <div className="text-center py-20 rounded-2xl border border-dashed border-border bg-card dark:bg-gray-800">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-surface-elevated dark:bg-gray-700">
                 <RefreshCw size={28} />
               </div>
               <h3 className="text-lg font-semibold">No active subscriptions</h3>
@@ -418,54 +419,69 @@ export function OrderHistory({ onBack }) {
             subscriptions.map((sub) => (
               <div
                 key={sub.id}
-                style={{
-                  backgroundColor: "var(--card)",
-                  color: "var(--card-foreground)",
-                  borderColor: "var(--border)",
-                }}
-                className="rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all"
+                className="rounded-2xl overflow-hidden border border-gray-200/50 dark:border-gray-700/50 
+                 shadow-lg hover:shadow-2xl transition-all bg-white/70 dark:bg-gray-800/70 
+                 backdrop-blur-md"
               >
-                <div style={{ background: "var(--primary)" }} className="h-2" />
+                {/* Top accent bar */}
+                <div className="h-2" style={{ background: "var(--primary)" }} />
+
                 <div className="p-6">
+                  {/* Header */}
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="text-xl font-bold">{sub.plan}</h3>
-                      <p className="text-sm mt-1">ID: {sub.id}</p>
+                      <h3 className="text-xl font-bold text-foreground dark:text-white">
+                        {sub.plan}
+                      </h3>
+                      <p className="text-sm text-muted-foreground dark:text-gray-300 mt-1">
+                        ID: {sub.id}
+                      </p>
                     </div>
                     <Badge status={sub.status} />
                   </div>
 
+                  {/* Dates */}
                   <div
-                    style={{ backgroundColor: "var(--surface-overlay)" }}
-                    className="grid grid-cols-2 gap-6 p-4 rounded-xl"
+                    className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-white/30 dark:bg-gray-900/30 
+                        backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30"
                   >
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wider mb-1 text-muted-foreground dark:text-gray-300">
                         Started On
                       </p>
-                      <p className="font-semibold flex items-center gap-2">
+                      <p className="font-semibold flex items-center gap-2 text-foreground dark:text-white">
                         <Calendar size={14} /> {formatDate(sub.start_date)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wider mb-1 text-muted-foreground dark:text-gray-300">
                         Next Billing
                       </p>
-                      <p className="font-semibold flex items-center gap-2">
+                      <p className="font-semibold flex items-center gap-2 text-foreground dark:text-white">
                         <Clock size={14} /> {formatDate(sub.next_billing)}
                       </p>
                     </div>
                   </div>
-
+                  {/* Action Button */}
                   <div className="mt-6">
                     {sub.status === "active" ? (
-                      <Button
-                        variant="destructive"
-                        className="w-full"
-                        onClick={() => handleCancel(sub.id)}
-                      >
-                        Cancel Subscription
-                      </Button>
+                      <SubscriptionCancel
+                        subId={sub.id}
+                        onCancel={(subId, nextBilling) => {
+                          // Update subscriptions state after cancel
+                          setSubscriptions((prev) =>
+                            prev.map((s) =>
+                              s.id === subId
+                                ? {
+                                    ...s,
+                                    status: "canceled",
+                                    next_billing: nextBilling,
+                                  }
+                                : s
+                            )
+                          );
+                        }}
+                      />
                     ) : (
                       <Button variant="outline" className="w-full" disabled>
                         Subscription Ended

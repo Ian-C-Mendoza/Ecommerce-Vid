@@ -17,7 +17,7 @@ export const services = [
     thumbnail:
       "https://images.unsplash.com/photo-1625961332635-3d18bbad67fa?...",
     //stripeMonthlyPriceId: "price_1STo5G2aOr9gLv7btajWPjUO",
-    stripeMonthlyPriceId: "price_1SXSEHFWLpcmMuQ2WwkqXOpM",
+    stripeMonthlyPriceId: "price_1Sdm3KKG8d6aPBsU0FT8kjXx",
     videos: [
       "/core/copy_A16D6D2D-5182-4F56-A501-E0A9B7FF7B40.mp4",
       "/core/DITL 3 LOCO.mp4",
@@ -44,7 +44,7 @@ export const services = [
     ],
     thumbnail: "https://images.unsplash.com/photo-1552680324-aee2ea34b336?...",
     // stripeMonthlyPriceId: "price_1STo5c2aOr9gLv7b9ZCCXJCh",
-    stripeMonthlyPriceId: "price_1SXSFDFWLpcmMuQ2f9kAAvbl",
+    stripeMonthlyPriceId: "price_1Sdm3yKG8d6aPBsU7cZqJWQx",
 
     videos: [
       "/assets/CLOSING 2.mp4",
@@ -74,7 +74,7 @@ export const services = [
     thumbnail:
       "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?...",
     // stripeMonthlyPriceId: "price_1STo6B2aOr9gLv7bw2HUaI3y",
-    stripeMonthlyPriceId: "price_1SXSFhFWLpcmMuQ2HHm5kwqN",
+    stripeMonthlyPriceId: "price_1Sdm4kKG8d6aPBsUluWtZTXS",
 
     videos: [
       "/assets/CLOSING 1.mp4",
@@ -104,7 +104,7 @@ export const services = [
     thumbnail:
       "https://images.unsplash.com/photo-1478720568477-b7a8c80ecb64?...",
     //stripeMonthlyPriceId: "price_1STo6c2aOr9gLv7bnB5mLH8K",
-    stripeMonthlyPriceId: "price_1SXSGEFWLpcmMuQ2AANnHQjO",
+    stripeMonthlyPriceId: "price_1Sdm5QKG8d6aPBsUbxEFH8Bg",
 
     videos: [
       "/assets/COMPANY EDIT.mp4",

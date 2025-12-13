@@ -361,7 +361,11 @@ export function Checkout({
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                       <StripePaymentForm
                         onOneTimeSuccess={handleCheckoutAfterPayment}
-                        onSubscriptionSuccess={() => setStep("success")}
+                        onSubscriptionSuccess={() => {
+                          setCartItems([]);
+                          localStorage.removeItem("cart");
+                          setStep("success");
+                        }}
                         userEmail={user?.email}
                         selectedService={selectedService}
                         BACKEND_URL={BACKEND_URL}

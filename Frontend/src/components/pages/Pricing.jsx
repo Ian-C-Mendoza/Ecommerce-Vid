@@ -5,36 +5,8 @@ import { Badge } from "../ui/badge";
 import { Check, Star } from "lucide-react";
 import { services } from "../../data/mockData";
 import { CustomBuilder } from "../pages/CustomBuilder";
-import { CustomPackageBuilder } from "../pages/CustomPackageBuilder";
 
-export function Pricing({ onSelectService }) {
-  const [isCustomBuilderOpen, setIsCustomBuilderOpen] = useState(false);
-
-  // Open the custom package builder
-  const handleOpenCustomBuilder = () => {
-    setIsCustomBuilderOpen(true);
-  };
-
-  // Back to pricing
-  const handleBackToPricing = () => {
-    setIsCustomBuilderOpen(false);
-  };
-
-  // When user completes building a custom package
-  const handleCustomPackageFinish = (customServiceObject) => {
-    onSelectService(customServiceObject); // goes to ServiceDetails
-  };
-
-  // If custom builder is open → show the builder page
-  if (isCustomBuilderOpen) {
-    return (
-      <CustomPackageBuilder
-        onBack={handleBackToPricing}
-        onSelectService={handleCustomPackageFinish}
-      />
-    );
-  }
-
+export function Pricing({ onSelectService, onOpenCustomBuilder }) {
   // MAIN PRICING PAGE
   return (
     <section className="section-spacing relative overflow-hidden" id="pricing">
@@ -138,7 +110,7 @@ export function Pricing({ onSelectService }) {
           ))}
 
           {/* Custom Package Button */}
-          <CustomBuilder onBuild={handleOpenCustomBuilder} />
+          <CustomBuilder onBuild={onOpenCustomBuilder} />
         </div>
       </div>
     </section>
