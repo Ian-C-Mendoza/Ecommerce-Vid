@@ -123,22 +123,30 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const refreshAll = async () => {
+      if (!isMounted) return;
+
       setIsRefreshing(true);
       try {
         await fetchOrders();
         await fetchSubscriptions();
         await loadMessages();
+      } catch (err) {
+        console.error("Refresh failed:", err);
       } finally {
         setIsRefreshing(false);
+        // schedule next refresh only after this one finishes
+        if (isMounted) setTimeout(refreshAll, 5000); // 5 seconds
       }
     };
 
     refreshAll(); // initial fetch
 
-    const interval = setInterval(refreshAll, 5_000);
-
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Load portfolio items from localStorage on component mount
