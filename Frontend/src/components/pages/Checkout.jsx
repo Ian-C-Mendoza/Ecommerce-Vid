@@ -282,7 +282,10 @@ export function Checkout({
                     required
                   />
                 </div>
-                <div className="flex gap-4 mt-2">
+                <div>
+                  <label>Preferred Way of Communication</label>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                   {["Email", "WhatsApp", "iMessage"].map((method) => {
                     const isSelected = billing.communication === method;
                     return (
@@ -291,19 +294,15 @@ export function Checkout({
                         onClick={() =>
                           setBilling({ ...billing, communication: method })
                         }
-                        className={`cursor-pointer flex-1 rounded-xl p-4 text-center border transition-all flex flex-col items-center justify-center gap-2
+                        className={`cursor-pointer rounded-xl p-4 text-center border transition-all flex flex-col items-center justify-center gap-2
           ${
             isSelected
-              ? "bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg text-white dark:text-gray-100"
-              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-400"
+              ? "bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg text-white"
+              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:border-gray-500"
           }`}
                       >
                         <span className="font-semibold">{method}</span>
-                        {isSelected && (
-                          <span className="mt-1 font-bold text-white dark:text-gray-100">
-                            ✔
-                          </span>
-                        )}
+                        {isSelected && <span className="font-bold">✔</span>}
                       </div>
                     );
                   })}
@@ -388,10 +387,16 @@ export function Checkout({
                 <h2 className="text-2xl font-bold text-green-600">
                   🎉 Thank you for your purchase!
                 </h2>
+
                 <p className="text-gray-600">
                   Your order has been placed successfully. We appreciate your
                   business!
                 </p>
+                <p className="text-xs text-amber-700 bg-amber-100 px-3 py-2 rounded-md font-medium">
+                  Please check your spam folder in your email to see the order
+                  confirmation.
+                </p>
+
                 <Button
                   className="w-full bg-gradient-primary text-white"
                   onClick={onSelectService}

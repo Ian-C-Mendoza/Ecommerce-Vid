@@ -78,7 +78,7 @@ import {
 export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   const [orders, setOrders] = useState(mockOrders);
   const [subscriptions, setSubscriptions] = useState([]); // ✅ must exist
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [servicesList, setServicesList] = useState(services);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,6 +121,25 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     rating: 5,
     avatar: "",
   });
+
+  useEffect(() => {
+    const refreshAll = async () => {
+      setIsRefreshing(true);
+      try {
+        await fetchOrders();
+        await fetchSubscriptions();
+        await loadMessages();
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
+    refreshAll(); // initial fetch
+
+    const interval = setInterval(refreshAll, 5_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Load portfolio items from localStorage on component mount
   useEffect(() => {
@@ -250,7 +269,27 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     setSelectedMessage(null);
   }
   useEffect(() => {
-    loadMessages();
+    loadMessages(); // initial load
+
+    const channel = supabase
+      .channel("admin-messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          console.log("📩 New message change detected");
+          loadMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleSelectOrder = (orderId) => {
@@ -355,64 +394,94 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
   }, []);
 
   useEffect(() => {
-    async function fetchSubscriptions() {
-      setIsLoadingSubscriptions(true);
+    const channel = supabase
+      .channel("admin-orders-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT | UPDATE | DELETE
+          schema: "public",
+          table: "orders",
+        },
+        (payload) => {
+          console.log("🔁 Order change detected:", payload);
 
-      try {
-        // 🔹 Try Supabase session first
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+          setOrders((prev) => {
+            if (payload.eventType === "INSERT") {
+              return [payload.new, ...prev];
+            }
 
-        if (sessionError) throw sessionError;
+            if (payload.eventType === "UPDATE") {
+              return prev.map((order) =>
+                order.id === payload.new.id ? payload.new : order
+              );
+            }
 
-        let token = null;
+            if (payload.eventType === "DELETE") {
+              return prev.filter((order) => order.id !== payload.old.id);
+            }
 
-        if (session?.access_token) {
-          console.log("🟢 Supabase session found, using access token...");
-          token = session.access_token;
-        } else {
-          const localToken = localStorage.getItem("token");
-          if (localToken) {
-            console.log(
-              "🟠 Using stored JWT token for fetching subscriptions..."
-            );
-            token = localToken;
-          } else {
-            console.warn(
-              "⚠️ No Supabase or stored token, fallback to cookie..."
-            );
-          }
+            return prev;
+          });
         }
+      )
+      .subscribe();
 
-        // 🔹 Fetch from backend
-        const res = await axios.get(`${BACKEND_URL}/api/subscriptions`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          withCredentials: true,
-        });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
-        if (res.data) {
-          setSubscriptions(res.data);
-          console.log("✅ Subscriptions fetched successfully:", res.data);
-        } else {
-          console.warn("⚠️ No subscriptions data received.");
-          setSubscriptions([]);
-        }
-      } catch (err) {
-        console.error(
-          "❌ Error fetching subscriptions:",
-          err.response?.data || err.message
-        );
-        setSubscriptions([]);
-      } finally {
-        setIsLoadingSubscriptions(false);
+  // 🔹 Move this outside of useEffect so all effects can access it
+  const fetchSubscriptions = async () => {
+    setIsLoadingSubscriptions(true);
+
+    try {
+      // 🔹 Try Supabase session first
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      const token =
+        session?.access_token || localStorage.getItem("token") || null;
+
+      if (token) {
+        console.log("🟢 Using token for fetching subscriptions...");
+      } else {
+        console.warn("⚠️ No token found, fallback to cookie...");
       }
-    }
 
+      // 🔹 Fetch from backend
+      const res = await axios.get(`${BACKEND_URL}/api/subscriptions`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        withCredentials: true,
+      });
+
+      if (res.data) {
+        setSubscriptions(res.data);
+        console.log("✅ Subscriptions fetched successfully:", res.data);
+      } else {
+        console.warn("⚠️ No subscriptions data received.");
+        setSubscriptions([]);
+      }
+    } catch (err) {
+      console.error(
+        "❌ Error fetching subscriptions:",
+        err.response?.data || err.message
+      );
+      setSubscriptions([]);
+    } finally {
+      setIsLoadingSubscriptions(false);
+    }
+  };
+
+  // 🔹 Fetch subscriptions on mount and listen to auth changes
+  useEffect(() => {
     fetchSubscriptions();
 
-    // 🔁 Re-fetch when auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session) {
@@ -425,6 +494,27 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     );
 
     return () => authListener.subscription.unsubscribe();
+  }, []);
+
+  // 🔹 Listen for realtime changes in subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-subscriptions-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT | UPDATE | DELETE
+          schema: "public",
+          table: "subscriptions",
+        },
+        () => {
+          console.log("🔁 Subscription change detected");
+          fetchSubscriptions(); // ✅ now works
+        }
+      )
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
   // 🧩 Add or replace this useEffect in AdminDashboard.jsx

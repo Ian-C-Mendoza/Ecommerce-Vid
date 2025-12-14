@@ -1,26 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { Switch } from "../ui/switch";
 import { Badge } from "../ui/badge";
-import {
-  Moon,
-  Sun,
-  ShoppingCart,
-  Menu,
-  X,
-  Clock,
-  Settings,
-} from "lucide-react";
+import { ShoppingCart, Menu, X, Clock, Settings } from "lucide-react";
 
-export function Header({
-  currentPage,
-  onPageChange,
-  isDark,
-  onThemeToggle,
-  cartCount,
-}) {
+export function Header({ currentPage, onPageChange, cartCount }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false); // MUST be before useEffect
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const navItems = [
     { id: "home", label: "Home" },
@@ -46,9 +31,7 @@ export function Header({
   };
 
   // 🚫 Don't render header if on admin page
-  if (currentPage === "admin") {
-    return null;
-  }
+  if (currentPage === "admin") return null;
 
   return (
     <header className="sticky top-0 z-50 border-b bg-[#D8D2C2] dark:bg-[#0F0F0F]/70 backdrop-blur-lg shadow-sm">
@@ -85,14 +68,11 @@ export function Header({
                 }`}
               >
                 {item.label}
-                {currentPage === item.id && (
-                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-gradient-secondary rounded-full" />
-                )}
               </Button>
             ))}
           </nav>
 
-          {/* Right side actions */}
+          {/* Right Actions */}
           <div className="flex items-center space-x-3">
             {/* Cart */}
             <Button
@@ -111,7 +91,19 @@ export function Header({
               </div>
             </Button>
 
-            {/* Orders */}
+            {/* ⏱ Orders Icon (Mobile only) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleNavClick("orders")}
+              className={`relative btn-hover-accent md:hidden ${
+                currentPage === "orders" ? "bg-gradient-primary text-white" : ""
+              }`}
+            >
+              <Clock className="h-4 w-4" />
+            </Button>
+
+            {/* Orders (Desktop) */}
             <Button
               variant="outline"
               size="sm"
@@ -124,24 +116,20 @@ export function Header({
               History
             </Button>
 
-            {/* 🔐 Admin (revealed by Ctrl+Shift+A) */}
+            {/* 🔐 Admin (Desktop only) */}
             {showAdmin && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleNavClick("admin")}
-                className={`hidden md:flex btn-hover-accent ${
-                  currentPage === "admin"
-                    ? "bg-gradient-primary text-white"
-                    : ""
-                }`}
+                className="hidden md:flex btn-hover-accent"
               >
                 <Settings className="h-4 w-4 mr-1" />
                 Admin
               </Button>
             )}
 
-            {/* Mobile Menu */}
+            {/* Mobile Menu Toggle */}
             <Button
               variant="ghost"
               size="sm"
@@ -166,11 +154,7 @@ export function Header({
                   key={item.id}
                   variant={currentPage === item.id ? "default" : "ghost"}
                   onClick={() => handleNavClick(item.id)}
-                  className={`justify-start transition-all duration-300 ${
-                    currentPage === item.id
-                      ? "bg-gradient-primary text-white"
-                      : "hover:bg-surface-elevated"
-                  }`}
+                  className="justify-start"
                 >
                   {item.label}
                 </Button>
