@@ -276,29 +276,6 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
     loadMessages();
     setSelectedMessage(null);
   }
-  useEffect(() => {
-    loadMessages(); // initial load
-
-    const channel = supabase
-      .channel("admin-messages-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "messages",
-        },
-        () => {
-          console.log("📩 New message change detected");
-          loadMessages();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const handleSelectOrder = (orderId) => {
     setSelectedOrders((prev) =>
@@ -329,6 +306,30 @@ export function AdminDashboard({ activeTab = "overview", onTabChange }) {
 
   //const BACKEND_URL = "http://localhost:5000";
   const BACKEND_URL = "https://we-edit-co.onrender.com";
+
+  useEffect(() => {
+    loadMessages(); // initial load
+
+    const channel = supabase
+      .channel("admin-messages-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          console.log("📩 New message change detected");
+          loadMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     async function fetchOrders() {
