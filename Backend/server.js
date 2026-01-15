@@ -63,13 +63,19 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://we-edit-co.onrender.com", // backend itself
-      "https://weeditco.com", // your live frontend
-      "https://weeditco.netlify.app", // if still using Netlify for testing
+      "http://localhost:5173",
+      "https://www.weeditco.com",
+      "https://weeditco.com",
+      "https://weeditco.netlify.app",
     ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// ✅ THIS LINE IS CRITICAL
+app.options("*", cors());
 
 /* -----------------------------------------
    🧩 JSON parser (after Stripe webhook)
